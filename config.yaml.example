@@ -1,0 +1,7 @@
+database:
+  sqlite_path: "data/test.db"
+
+jwt:
+  secret: "ljd38jdlwdDWlkjidF3rSDF3dasda233"
+  access_token_exp: 15m
+  refresh_token_exp: 168h

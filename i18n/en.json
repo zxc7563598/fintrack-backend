@@ -1,0 +1,126 @@
+[
+  {
+    "id": "0",
+    "translation": "Success"
+  },
+  {
+    "id": "100001",
+    "translation": "Data query failed"
+  },
+  {
+    "id": "100002",
+    "translation": "Account information does not exist"
+  },
+  {
+    "id": "100003",
+    "translation": "Incorrect password"
+  },
+  {
+    "id": "100004",
+    "translation": "User already exists"
+  },
+  {
+    "id": "100005",
+    "translation": "Login expired, please log in again"
+  },
+  {
+    "id": "100006",
+    "translation": "Registration failed"
+  },
+  {
+    "id": "100007",
+    "translation": "File saving failed"
+  },
+  {
+    "id": "100008",
+    "translation": "Failed to retrieve file"
+  },
+  {
+    "id": "100009",
+    "translation": "Failed to create directory"
+  },
+  {
+    "id": "100010",
+    "translation": "No valid Alipay bill recognized"
+  },
+  {
+    "id": "100011",
+    "translation": "Failed to save bill data"
+  },
+  {
+    "id": "100012",
+    "translation": "Time conversion failed"
+  },
+  {
+    "id": "100013",
+    "translation": "Failed to add record"
+  },
+  {
+    "id": "100014",
+    "translation": "Failed to delete data"
+  },
+  {
+    "id": "100015",
+    "translation": "Failed to retrieve password"
+  },
+  {
+    "id": "100016",
+    "translation": "Decompression failed, incorrect password"
+  },
+  {
+    "id": "200002",
+    "translation": "Failed to generate login credential"
+  },
+  {
+    "id": "300001",
+    "translation": "Missing authentication header"
+  },
+  {
+    "id": "300002",
+    "translation": "Invalid token"
+  },
+  {
+    "id": "300003",
+    "translation": "Invalid request data"
+  },
+  {
+    "id": "300004",
+    "translation": "Request expired"
+  },
+  {
+    "id": "300005",
+    "translation": "Data encryption error, decryption failed"
+  },
+  {
+    "id": "300006",
+    "translation": "Data encryption error, decryption failed"
+  },
+  {
+    "id": "300007",
+    "translation": "Data encryption error, decryption failed"
+  },
+  {
+    "id": "300008",
+    "translation": "Signature verification failed"
+  },
+  {
+    "id": "300009",
+    "translation": "Data error, invalid data"
+  },
+  {
+    "id": "300010",
+    "translation": "Data error, invalid data"
+  },
+  {
+    "id": "300011",
+    "translation": "Data error, invalid data"
+  },
+  {
+    "id": "300012",
+    "translation": "Data error, invalid data"
+  },
+  {
+    "id": "300013",
+    "translation": "Invalid request parameters, please check the documentation for parameter names and types"
+  }
+]
