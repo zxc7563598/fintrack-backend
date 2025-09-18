@@ -218,7 +218,6 @@ func StoreBillRecordHandler(c *gin.Context) {
 	}
 	t, err := time.ParseInLocation(layout, req.TradeTime, time.Local)
 	if err != nil {
-		fmt.Println("解析时间出错:", err)
 		response.Fail(c, 100012)
 		return
 	}
