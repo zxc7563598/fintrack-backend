@@ -14,12 +14,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// 用户注册请求体
 type LoginRegisterRequest struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Name     string `json:"name" binding:"required"`     // 用户昵称
+	Email    string `json:"email" binding:"required"`    // 用户邮箱
+	Password string `json:"password" binding:"required"` // 用户密码
 }
 
+// 用户注册接口
 func LoginRegisterHandler(c *gin.Context) {
 	// 获取参数
 	req := c.MustGet("payload").(LoginRegisterRequest)
@@ -50,14 +52,17 @@ func LoginRegisterHandler(c *gin.Context) {
 		response.Fail(c, 100006)
 		return
 	}
+	// 返回信息
 	response.Ok(c, gin.H{})
 }
 
+// 用户登录请求体
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required"`    // 用户邮箱
+	Password string `json:"password" binding:"required"` // 用户密码
 }
 
+// 用户登录接口
 func LoginHandler(c *gin.Context) {
 	// 获取参数
 	req := c.MustGet("payload").(LoginRequest)
@@ -78,16 +83,19 @@ func LoginHandler(c *gin.Context) {
 		response.Fail(c, 200002)
 		return
 	}
+	// 返回信息
 	response.Ok(c, gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	})
 }
 
+// 刷新token请求体
 type RefreshTokenRequest struct {
-	RefreshToken string `json:"refresh_token" binding:"required"`
+	RefreshToken string `json:"refresh_token" binding:"required"` // refresh token
 }
 
+// 刷新token接口
 func RefreshTokenHandler(c *gin.Context) {
 	// 获取参数
 	req := c.MustGet("payload").(RefreshTokenRequest)
@@ -97,7 +105,7 @@ func RefreshTokenHandler(c *gin.Context) {
 		response.Fail(c, 100005)
 		return
 	}
-	// 返回新的 token
+	// 返回信息
 	response.Ok(c, gin.H{
 		"access_token":  newAccessToken,
 		"refresh_token": newRefreshToken,

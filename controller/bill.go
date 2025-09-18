@@ -12,17 +12,19 @@ import (
 	"github.com/zxc7563598/fintrack-backend/utils/response"
 )
 
+// 获取交易列表请求体
 type GetBillListRequest struct {
-	StartFormattedDate *string `json:"start_formatted_date"` // 开始日期，可选
-	EndFormattedDate   *string `json:"end_formatted_date"`   // 结束日期，可选
-	Search             *string `json:"search"`               // 搜索内容，可选
-	IncomeType         *int    `json:"income_type"`          // 收支类型，可选，1=收入,2=支出,3=不计收支
-	Page               *int    `json:"page"`                 // 页码，可选
-	ItemsPerPage       *int    `json:"items_per_page"`       // 每页条数，可选
-	SortKey            *string `json:"sort_key"`             // 排序字段，可选
-	SortOrder          *string `json:"sort_order"`           // 排序顺序，可选, "asc"/"desc"
+	StartFormattedDate *string `json:"start_formatted_date"` // 开始日期
+	EndFormattedDate   *string `json:"end_formatted_date"`   // 结束日期
+	Search             *string `json:"search"`               // 搜索内容
+	IncomeType         *int    `json:"income_type"`          // 收支类型
+	Page               *int    `json:"page"`                 // 页码
+	ItemsPerPage       *int    `json:"items_per_page"`       // 每页条数
+	SortKey            *string `json:"sort_key"`             // 排序字段
+	SortOrder          *string `json:"sort_order"`           // 排序顺序
 }
 
+// 获取交易列表接口
 func GetBillListHandler(c *gin.Context) {
 	layout := "2006-01-02"
 	// 获取用户ID
@@ -114,10 +116,12 @@ func GetBillListHandler(c *gin.Context) {
 	})
 }
 
+// 获取交易信息请求体
 type GetBillInfoRequest struct {
 	ID uint `json:"id" binding:"required"` // ID，修改透传，添加为0
 }
 
+// 获取交易信息接口
 func GetBillInfoHandler(c *gin.Context) {
 	// 获取用户ID
 	userIDAny, exists := c.Get("user_id")
@@ -178,19 +182,21 @@ func GetBillInfoHandler(c *gin.Context) {
 	})
 }
 
+// 存储交易信息请求体
 type StoreBillRecordRequest struct {
 	ID            uint    `json:"id" binding:"required"`             // ID，修改透传，添加为0
-	Platform      uint8   `json:"platform" binding:"required"`       // 1=支付宝，2=微信
-	IncomeType    uint8   `json:"income_type" binding:"required"`    // 1=收入，2=支出，3=不计收支
-	TradeType     string  `json:"trade_type" binding:"required"`     // 交易类型，例如 "文化休闲"
+	Platform      uint8   `json:"platform" binding:"required"`       // 交易平台
+	IncomeType    uint8   `json:"income_type" binding:"required"`    // 收支类型
+	TradeType     string  `json:"trade_type" binding:"required"`     // 交易类型
 	ProductName   string  `json:"product_name" binding:"required"`   // 交易名称
 	Counterparty  string  `json:"counterparty" binding:"required"`   // 商户名称
 	PaymentMethod string  `json:"payment_method" binding:"required"` // 支付方式
 	Amount        float64 `json:"amount" binding:"required"`         // 金额
-	TradeTime     string  `json:"trade_time" binding:"required"`     // 交易时间，格式 "2006-01-02 15:04:05"
-	Remark        string  `json:"remark"`                            // 备注，可选
+	TradeTime     string  `json:"trade_time" binding:"required"`     // 交易时间
+	Remark        string  `json:"remark"`                            // 备注
 }
 
+// 存储交易信息接口
 func StoreBillRecordHandler(c *gin.Context) {
 	layout := "2006-01-02 15:04:05"
 	// 获取用户ID
@@ -251,10 +257,12 @@ func StoreBillRecordHandler(c *gin.Context) {
 	response.Ok(c, gin.H{})
 }
 
+// 删除交易信息请求体
 type DeleteBillRecordRequest struct {
 	ID uint `json:"id" binding:"required"`
 }
 
+// 删除交易信息接口
 func DeleteBillRecordHandler(c *gin.Context) {
 	// 获取用户ID
 	userIDAny, exists := c.Get("user_id")

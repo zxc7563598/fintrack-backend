@@ -20,6 +20,7 @@ import (
 	"golang.org/x/text/transform"
 )
 
+// 支付宝账单CSV文件上传接口
 func UploadAlipayCSVHandler(c *gin.Context) {
 	// 获取上传的文件
 	file, err := c.FormFile("file")
@@ -90,6 +91,7 @@ func UploadAlipayCSVHandler(c *gin.Context) {
 	})
 }
 
+// 支付宝账单ZIP文件上传接口
 func UploadAlipayZIPHandler(c *gin.Context) {
 	// 获取上传的文件
 	file, err := c.FormFile("file")
@@ -155,10 +157,12 @@ func UploadAlipayZIPHandler(c *gin.Context) {
 	})
 }
 
+// 获取支付宝CSV概览信息请求体
 type GetAlipayCSVOverviewRequest struct {
-	Path string `json:"path" binding:"required"`
+	Path string `json:"path" binding:"required"` // CSV路径
 }
 
+// 获取支付宝CSV概览信息接口
 func GetAlipayCSVOverviewHandler(c *gin.Context) {
 	// 获取参数
 	req := c.MustGet("payload").(GetAlipayCSVOverviewRequest)
@@ -192,10 +196,12 @@ func GetAlipayCSVOverviewHandler(c *gin.Context) {
 	})
 }
 
+// 存储支付宝CSV账单数据请求体
 type StoreAlipayCSVInfoRequest struct {
-	Path string `json:"path" binding:"required"`
+	Path string `json:"path" binding:"required"` // CSV路径
 }
 
+// 存储支付宝CSV账单数据接口
 func StoreAlipayCSVInfoHandler(c *gin.Context) {
 	layout := "2006-1-2 15:04:05"
 	// 获取用户ID
@@ -289,5 +295,6 @@ func StoreAlipayCSVInfoHandler(c *gin.Context) {
 		response.Fail(c, 100007)
 		return
 	}
+	// 返回数据
 	response.Ok(c, gin.H{})
 }
