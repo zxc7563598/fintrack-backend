@@ -25,6 +25,7 @@ func InitDB() {
 		&model.User{},
 		&model.Token{},
 		&model.BillRecord{},
+		&model.UserMailbox{},
 	)
 	if err != nil {
 		log.Fatalf("自动迁移失败: %v", err)
