@@ -41,6 +41,8 @@ func SetupRouter() *gin.Engine {
 		authGroup.POST("/file/alipay/upload/zip", controller.UploadAlipayZIPHandler)
 		authGroup.POST("/file/alipay/overview", middleware.DecryptMiddleware[controller.GetAlipayCSVOverviewRequest](), controller.GetAlipayCSVOverviewHandler)
 		authGroup.POST("/file/alipay/store", middleware.DecryptMiddleware[controller.StoreAlipayCSVInfoRequest](), controller.StoreAlipayCSVInfoHandler)
+
+		authGroup.POST("/file/alipay/email", middleware.DecryptMiddleware[controller.GetAlipayBillMailRequest](), controller.GetAlipayBillMailHandler)
 	}
 	return r
 }

@@ -6,7 +6,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -16,9 +15,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/emersion/go-imap"
-	"github.com/emersion/go-imap/client"
-	"github.com/emersion/go-message/mail"
 	"github.com/yeka/zip"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/text/encoding/simplifiedchinese"
@@ -297,121 +293,4 @@ func ConvertCSVGBKToUTF8(csvPath string) (string, error) {
 		return "", err
 	}
 	return outPath, err
-}
-
-// 邮件结构体
-type Email struct {
-	Subject     string
-	From        string
-	Date        string
-	TextBody    string
-	HTMLBody    string
-	Attachments []Attachment
-}
-
-type Attachment struct {
-	FileName string
-	Data     []byte
-}
-
-// 获取特定发件人的未读邮件（包含正文和附件）
-func GetUnreadEmailsFromSender(addr, password, imapServer, sender string) ([]Email, error) {
-	// 连接 IMAP
-	c, err := client.DialTLS(imapServer, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer c.Logout()
-	// 登录
-	if err := c.Login(addr, password); err != nil {
-		return nil, err
-	}
-	// 选择收件箱
-	mbox, err := c.Select("INBOX", false)
-	if err != nil {
-		return nil, err
-	}
-	if mbox.Messages == 0 {
-		return []Email{}, nil
-	}
-	// 搜索未读 + 特定发件人
-	criteria := imap.NewSearchCriteria()
-	criteria.WithoutFlags = []string{"\\Seen"}
-	criteria.Header.Add("FROM", sender)
-	ids, err := c.Search(criteria)
-	if err != nil {
-		return nil, err
-	}
-	if len(ids) == 0 {
-		return []Email{}, nil
-	}
-	// 获取消息
-	seqset := new(imap.SeqSet)
-	seqset.AddNum(ids...)
-	section := &imap.BodySectionName{}
-	messages := make(chan *imap.Message, 10)
-	go func() {
-		if err := c.Fetch(seqset, []imap.FetchItem{section.FetchItem()}, messages); err != nil {
-			log.Fatal(err)
-		}
-	}()
-	var emails []Email
-	for msg := range messages {
-		if msg == nil {
-			continue
-		}
-		r := msg.GetBody(section)
-		if r == nil {
-			continue
-		}
-		// 解析邮件
-		mr, err := mail.CreateReader(r)
-		if err != nil {
-			continue
-		}
-		email := Email{}
-		header := mr.Header
-		// 标题
-		if subject, err := header.Subject(); err == nil {
-			email.Subject = subject
-		}
-		// 发件人
-		if from, err := header.AddressList("From"); err == nil && len(from) > 0 {
-			email.From = from[0].String()
-		}
-		// 时间
-		if date, err := header.Date(); err == nil {
-			email.Date = date.String()
-		}
-		// 遍历内容
-		for {
-			p, err := mr.NextPart()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				break
-			}
-			switch h := p.Header.(type) {
-			case *mail.InlineHeader:
-				ctype, _, _ := h.ContentType()
-				body, _ := io.ReadAll(p.Body)
-				switch ctype {
-				case "text/plain":
-					email.TextBody = string(body)
-				case "text/html":
-					email.HTMLBody = string(body)
-				}
-			case *mail.AttachmentHeader:
-				filename, _ := h.Filename()
-				data, _ := io.ReadAll(p.Body)
-				email.Attachments = append(email.Attachments, Attachment{
-					FileName: filename,
-					Data:     data,
-				})
-			}
-		}
-		emails = append(emails, email)
-	}
-	return emails, nil
 }

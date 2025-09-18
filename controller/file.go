@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/zxc7563598/fintrack-backend/config"
+	"github.com/zxc7563598/fintrack-backend/dto"
 	"github.com/zxc7563598/fintrack-backend/model"
 	"github.com/zxc7563598/fintrack-backend/utils/helpers"
 	"github.com/zxc7563598/fintrack-backend/utils/response"
@@ -297,4 +298,46 @@ func StoreAlipayCSVInfoHandler(c *gin.Context) {
 	}
 	// 返回数据
 	response.Ok(c, gin.H{})
+}
+
+// 获取支付宝账单邮件请求体
+type GetAlipayBillMailRequest struct {
+	ID uint `json:"id" binding:"required"` // 邮箱ID
+}
+
+// 获取支付宝账单邮件接口
+func GetAlipayBillMailHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取请求参数
+	req, ok := c.MustGet("payload").(GetAlipayBillMailRequest)
+	if !ok {
+		response.Fail(c, 100010)
+		return
+	}
+	// 获取绑定邮件
+	var userMailbox dto.UserMailboxListItem
+	model := config.DB.Model(&model.UserMailbox{}).Where("id = ? and user_id = ?", req.ID, userID).First(&userMailbox)
+	if model.Error != nil {
+		response.Fail(c, 100001)
+		return
+	}
+	// 获取邮件信息
+	// emails, err := email.FetchUnreadFrom(userMailbox.IMAP, userMailbox.Email, userMailbox.AuthCode, "service@mail.alipay.com", 3)
+	// if err != nil {
+	// 	log.Fatal("获取邮件失败:", err)
+	// }
+	// for _, e := range emails {
+	// 	fmt.Printf("UID:%d From:%s Subject:%s Date:%s\nTextLen:%d HTMLLen:%d Attach:%v\n\n",
+	// 		e.UID, e.From, e.Subject, e.Date, len(e.Text), len(e.HTML), e.Files)
+	// }
 }
