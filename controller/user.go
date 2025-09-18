@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/zxc7563598/fintrack-backend/config"
+	"github.com/zxc7563598/fintrack-backend/dto"
 	"github.com/zxc7563598/fintrack-backend/jwt"
 	"github.com/zxc7563598/fintrack-backend/model"
 	"github.com/zxc7563598/fintrack-backend/utils/helpers"
@@ -110,4 +111,119 @@ func RefreshTokenHandler(c *gin.Context) {
 		"access_token":  newAccessToken,
 		"refresh_token": newRefreshToken,
 	})
+}
+
+// 获取用户绑定邮箱接口
+func GetUserEmailsHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取数据
+	var list []dto.UserMailboxListItem
+	db := config.DB.Model(&model.UserMailbox{}).Where("user_id = ?", userID)
+	if err := db.Find(&list).Error; err != nil {
+		response.Fail(c, 100001)
+		return
+	}
+	// 返回信息
+	response.Ok(c, gin.H{
+		"list": list,
+	})
+}
+
+// 存储用户绑定邮箱请求体
+type StoreUserEmailRequest struct {
+	ID       uint   `json:"id"`                           // ID，修改透传，添加为0
+	Email    string `json:"email" binding:"required"`     // 邮箱
+	AuthCode string `json:"auth_code" binding:"required"` // 授权码
+	IMAP     string `json:"imap" binding:"required"`      // IMAP地址
+	Remark   string `json:"remark"`                       // 备注
+}
+
+// 存储用户绑定邮箱接口
+func StoreUserEmailHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取请求参数
+	req, ok := c.MustGet("payload").(StoreUserEmailRequest)
+	if !ok {
+		response.Fail(c, 100010)
+		return
+	}
+	// 存储数据
+	userMailbox := model.UserMailbox{
+		UserID:   userID,
+		Email:    req.Email,
+		AuthCode: req.AuthCode,
+		IMAP:     req.IMAP,
+		Remark:   req.Remark,
+	}
+	if req.ID > 0 {
+		// 修改
+		err := config.DB.Model(&model.UserMailbox{}).
+			Where("id = ? AND user_id = ?", req.ID, userID).
+			Updates(userMailbox).Error
+		if err != nil {
+			response.Fail(c, 100013)
+			return
+		}
+	} else {
+		// 新增
+		if err := config.DB.Create(&userMailbox).Error; err != nil {
+			response.Fail(c, 100013)
+			return
+		}
+	}
+	// 返回成功
+	response.Ok(c, gin.H{})
+}
+
+// 删除用户绑定邮箱请求体
+type DeleteUserEmailRequest struct {
+	ID uint `json:"id" binding:"required"` // ID
+}
+
+// 删除用户绑定邮箱接口
+func DeleteUserEmailHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取请求参数
+	req, ok := c.MustGet("payload").(DeleteUserEmailRequest)
+	if !ok {
+		response.Fail(c, 100010)
+		return
+	}
+	// 删除数据
+	if err := config.DB.Where("id = ? and user_id = ?", req.ID, userID).Delete(&model.UserMailbox{}).Error; err != nil {
+		response.Fail(c, 100014)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{})
 }
