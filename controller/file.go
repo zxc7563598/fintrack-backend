@@ -332,12 +332,6 @@ func GetAlipayBillMailHandler(c *gin.Context) {
 		return
 	}
 	// 获取邮件信息
-	// emails, err := email.FetchUnreadFrom(userMailbox.IMAP, userMailbox.Email, userMailbox.AuthCode, "service@mail.alipay.com", 3)
-	// if err != nil {
-	// 	log.Fatal("获取邮件失败:", err)
-	// }
-	// for _, e := range emails {
-	// 	fmt.Printf("UID:%d From:%s Subject:%s Date:%s\nTextLen:%d HTMLLen:%d Attach:%v\n\n",
-	// 		e.UID, e.From, e.Subject, e.Date, len(e.Text), len(e.HTML), e.Files)
-	// }
+	// 待定···
+	// 未来实现
 }
