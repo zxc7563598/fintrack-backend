@@ -17,3 +17,5 @@ config.yaml
 
 *.exe
 *.out
+/frontend
+/build

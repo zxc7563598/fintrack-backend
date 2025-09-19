@@ -8,6 +8,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/x509"
+	"embed"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -23,6 +24,7 @@ import (
 )
 
 var privateKey *rsa.PrivateKey
+var PrivateKeyFS embed.FS
 
 type DecryptRequest struct {
 	Timestamp  int64  `json:"timestamp"`
@@ -33,9 +35,20 @@ type DecryptRequest struct {
 
 // 初始化加载私钥
 func InitRSAKey(path string) error {
-	keyData, err := os.ReadFile(path)
-	if err != nil {
-		return err
+	var keyData []byte
+	var err error
+	// 尝试从嵌入的文件系统读取
+	if _, err := PrivateKeyFS.Open("private.pem"); err == nil {
+		keyData, err = PrivateKeyFS.ReadFile("private.pem")
+		if err != nil {
+			return err
+		}
+	} else {
+		// 回退到文件系统读取（开发环境）
+		keyData, err = os.ReadFile(path)
+		if err != nil {
+			return err
+		}
 	}
 	block, _ := pem.Decode(keyData)
 	if block == nil {
@@ -51,6 +64,11 @@ func InitRSAKey(path string) error {
 		return errors.New("不是合法的RSA私钥")
 	}
 	return nil
+}
+
+// 设置私钥文件系统
+func SetPrivateKeyFS(fs embed.FS) {
+	PrivateKeyFS = fs
 }
 
 // 解密中间件

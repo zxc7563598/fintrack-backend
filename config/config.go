@@ -1,6 +1,7 @@
 package config
 
 import (
+	"embed"
 	"log"
 	"os"
 	"time"
@@ -12,12 +13,6 @@ type DatabaseConfig struct {
 	SqlitePath string `yaml:"sqlite_path"`
 }
 
-type RedisConfig struct {
-	Addr     string `yaml:"addr"`
-	Password string `yaml:"password"`
-	DB       int    `yaml:"db"`
-}
-
 type JWTConfig struct {
 	Secret          string        `yaml:"secret"`
 	AccessTokenExp  time.Duration `yaml:"access_token_exp"`
@@ -26,16 +21,28 @@ type JWTConfig struct {
 
 type Config struct {
 	Database DatabaseConfig `yaml:"database"`
-	Redis    RedisConfig    `yaml:"redis"`
 	JWT      JWTConfig      `yaml:"jwt"`
 }
 
 var Cfg Config
+var ConfigFS embed.FS
 
 func InitConfig() {
-	file, err := os.ReadFile("config.yaml")
-	if err != nil {
-		log.Fatalf("failed to read config.yaml: %v", err)
+	var file []byte
+	var err error
+
+	// 尝试从嵌入的文件系统读取
+	if _, openErr := ConfigFS.Open("config.yaml"); openErr == nil {
+		file, err = ConfigFS.ReadFile("config.yaml")
+		if err != nil {
+			log.Fatalf("failed to read embedded config.yaml: %v", err)
+		}
+	} else {
+		// 回退到文件系统读取（开发环境）
+		file, err = os.ReadFile("config.yaml")
+		if err != nil {
+			log.Fatalf("failed to read config.yaml: %v", err)
+		}
 	}
 
 	if err := yaml.Unmarshal(file, &Cfg); err != nil {
@@ -43,4 +50,8 @@ func InitConfig() {
 	}
 
 	log.Println("✅ config.yaml loaded successfully")
+}
+
+func SetConfigFS(fs embed.FS) {
+	ConfigFS = fs
 }

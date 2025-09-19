@@ -1,0 +1,27 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "财务管理系统",
+  "outputfilename": "财务管理系统",
+  "frontend:install": "",
+  "frontend:build": "",
+  "frontend:dev:watcher": "",
+  "author": {
+    "name": "何俊杰",
+    "email": "junjie.he.925@gmail.com"
+  },
+  "info": {
+    "productName": "财务管理系统",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright © 2024, 财务管理系统 Team",
+    "comments": "个人财务追踪应用程序"
+  },
+  "nsisType": "multiple",
+  "obfuscated": false,
+  "wailsjsdir": "./frontend/build/wailsjs",
+  "assetdir": "./frontend/build",
+  "builddir": "./build",
+  "appargs": "",
+  "appdir": "./build/app",
+  "runNonNativeBuildHooks": false,
+  "platform": "darwin/amd64,darwin/arm64,windows/amd64,windows/arm64,linux/amd64,linux/arm64"
+}
