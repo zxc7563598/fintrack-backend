@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -286,4 +287,85 @@ func DeleteBillRecordHandler(c *gin.Context) {
 	}
 	// 返回成功
 	response.Ok(c, gin.H{})
+}
+
+// 获取账单日历请求体
+type GetBillCalendarRequest struct {
+	StartAt string `json:"start_at" binding:"required"`
+	EndAt   string `json:"end_at" binding:"required"`
+}
+
+// 获取账单日历接口
+func GetBillCalendarHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取请求参数
+	req, ok := c.MustGet("payload").(GetBillCalendarRequest)
+	if !ok {
+		response.Fail(c, 100010)
+		return
+	}
+	// 校验参数
+	start, err := time.Parse("2006-01-02", req.StartAt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start date"})
+		return
+	}
+	end, err := time.Parse("2006-01-02", req.EndAt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end date"})
+		return
+	}
+	// 统一到当天 00:00:00 和 23:59:59
+	startUnix := start.Unix()
+	endUnix := end.AddDate(0, 0, 1).Add(-time.Second).Unix()
+
+	// 查询数据库
+	var records []model.BillRecord
+	if err := config.DB.Where("user_id = ? AND trade_time BETWEEN ? AND ?", userID, startUnix, endUnix).
+		Find(&records).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// 初始化结果 map[日期]DailySummary
+	resultMap := make(map[string]*dto.BillDailySummary)
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+		dayStr := d.Format("2006-01-02")
+		resultMap[dayStr] = &dto.BillDailySummary{
+			Date:    dayStr,
+			Income:  0,
+			Expense: 0,
+		}
+	}
+	// 累加收入支出
+	for _, r := range records {
+		day := time.Unix(r.TradeTime, 0).Format("2006-01-02")
+		if summary, ok := resultMap[day]; ok {
+			switch r.IncomeType {
+			case 1: // 收入
+				summary.Income += r.Amount
+			case 2: // 支出
+				summary.Expense += r.Amount
+			}
+		}
+	}
+	// 转换为数组，保持日期顺序
+	var result []dto.BillDailySummary
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+		dayStr := d.Format("2006-01-02")
+		result = append(result, *resultMap[dayStr])
+	}
+	// 返回成功
+	response.Ok(c, gin.H{
+		"data": result,
+	})
 }

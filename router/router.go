@@ -33,6 +33,7 @@ func SetupRouter() *gin.Engine {
 		authGroup.POST("/user/email/delete", middleware.DecryptMiddleware[controller.DeleteUserEmailRequest](), controller.DeleteUserEmailHandler)
 
 		authGroup.POST("/bills", middleware.DecryptMiddleware[controller.GetBillListRequest](), controller.GetBillListHandler)
+		authGroup.POST("/bills/calendar", middleware.DecryptMiddleware[controller.GetBillCalendarRequest](), controller.GetBillCalendarHandler)
 		authGroup.POST("/bills/info", middleware.DecryptMiddleware[controller.GetBillInfoRequest](), controller.GetBillInfoHandler)
 		authGroup.POST("/bills/save", middleware.DecryptMiddleware[controller.StoreBillRecordRequest](), controller.StoreBillRecordHandler)
 		authGroup.POST("/bills/delete", middleware.DecryptMiddleware[controller.DeleteBillRecordRequest](), controller.DeleteBillRecordHandler)

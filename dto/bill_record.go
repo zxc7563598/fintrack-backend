@@ -27,3 +27,9 @@ type BillInfoItem struct {
 	TradeTime       int64   `json:"trade_time"`
 	Remark          string  `json:"remark"`
 }
+
+type BillDailySummary struct {
+	Date    string  `json:"date"`
+	Income  float64 `json:"income"`
+	Expense float64 `json:"expense"`
+}
