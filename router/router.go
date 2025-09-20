@@ -39,8 +39,13 @@ func SetupRouter() *gin.Engine {
 
 		authGroup.POST("/file/alipay/upload/csv", controller.UploadAlipayCSVHandler)
 		authGroup.POST("/file/alipay/upload/zip", controller.UploadAlipayZIPHandler)
+		authGroup.POST("/file/wechat/upload/xlsx", controller.UploadWeChatXLSXHandler)
+		authGroup.POST("/file/wechat/upload/zip", controller.UploadWeChatZIPHandler)
+
 		authGroup.POST("/file/alipay/overview", middleware.DecryptMiddleware[controller.GetAlipayCSVOverviewRequest](), controller.GetAlipayCSVOverviewHandler)
+		authGroup.POST("/file/wechat/overview", middleware.DecryptMiddleware[controller.GetWeChatXLSXOverviewRequest](), controller.GetWeChatXLSXOverviewHandler)
 		authGroup.POST("/file/alipay/store", middleware.DecryptMiddleware[controller.StoreAlipayCSVInfoRequest](), controller.StoreAlipayCSVInfoHandler)
+		authGroup.POST("/file/wechat/store", middleware.DecryptMiddleware[controller.StoreWechatXLSXInfoRequest](), controller.StoreWechatXLSXInfoHandler)
 
 		authGroup.POST("/file/alipay/email", middleware.DecryptMiddleware[controller.GetAlipayBillMailRequest](), controller.GetAlipayBillMailHandler)
 	}

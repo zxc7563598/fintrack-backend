@@ -13,7 +13,7 @@ type BillRecord struct {
 	TradeNo         string         `gorm:"size:255;comment:交易单号" json:"trade_no"`
 	MerchantOrderNo string         `gorm:"size:255;comment:商户单号" json:"merchant_order_no"`
 	Platform        uint8          `gorm:"comment:平台（支付宝、微信）" json:"platform"`
-	IncomeType      uint8          `gorm:"comment:收支类型（收入、支出、不记收支）" json:"income_type"`
+	IncomeType      uint8          `gorm:"comment:收支类型（1收入、2支出、3不记收支）" json:"income_type"`
 	TradeType       string         `gorm:"size:255;comment:交易类型（分类）" json:"trade_type"`
 	ProductName     string         `gorm:"size:255;comment:商品（交易名称）" json:"product_name"`
 	Counterparty    string         `gorm:"size:255;comment:交易对方（商户名称）" json:"counterparty"`
@@ -22,9 +22,9 @@ type BillRecord struct {
 	TradeStatus     string         `gorm:"size:255;comment:交易状态（成功、失败、关闭、退款等）" json:"trade_status"`
 	TradeTime       int64          `gorm:"not null;comment:交易时间" json:"trade_time"`
 	Remark          string         `gorm:"size:255;comment:备注" json:"remark"`
-	CreatedAt       time.Time      `json:"created_at"`              // 创建时间，自动填充
-	UpdatedAt       time.Time      `json:"updated_at"`              // 更新时间，自动更新
-	DeletedAt       gorm.DeletedAt `gorm:"index" json:"deleted_at"` // 逻辑删除
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+	DeletedAt       gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 }
 
 // Platform 平台枚举

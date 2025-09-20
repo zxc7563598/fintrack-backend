@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -15,6 +16,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/xuri/excelize/v2"
 	"github.com/yeka/zip"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/text/encoding/simplifiedchinese"
@@ -36,7 +38,7 @@ func HashPassword(password string, salt []byte) string {
 	return base64.RawStdEncoding.EncodeToString(hash)
 }
 
-// ReadCSV 读取 CSV 文件并返回二维数组
+// 读取 CSV 文件并返回二维数组
 func ReadCSV(filePath string) ([][]string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -52,6 +54,87 @@ func ReadCSV(filePath string) ([][]string, error) {
 		return nil, fmt.Errorf("读取 CSV 出错: %w", err)
 	}
 	return records, nil
+}
+
+// 读取 XLSX 文件并返回二维数组
+func ReadXLSX(filePath string) ([][]string, error) {
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	rows, err := f.GetRows("Sheet1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return rows, nil
+}
+
+// 微信XLSX基本信息结构体
+type WeChatBillSummary struct {
+	Nickname      string
+	StartTime     string
+	EndTime       string
+	ExportType    string
+	ExportTime    string
+	TotalRecords  int
+	IncomeCount   int
+	IncomeAmount  string
+	ExpenseCount  int
+	ExpenseAmount string
+	NeutralCount  int
+	NeutralAmount string
+}
+
+// 解析微信XLSX基本信息
+func ParseWeChatXLSX(rows [][]string) (*WeChatBillSummary, error) {
+	summary := &WeChatBillSummary{}
+	for i, row := range rows {
+		if len(row) == 0 {
+			continue
+		}
+		line := row[0]
+		switch {
+		case strings.HasPrefix(line, "微信昵称："):
+			summary.Nickname = strings.Trim(line[len("微信昵称："):], "[]")
+		case strings.HasPrefix(line, "起始时间："):
+			parts := strings.Split(line, "终止时间：")
+			if len(parts) == 2 {
+				start := strings.Trim(parts[0][len("起始时间："):], "[] ")
+				end := strings.Trim(parts[1], "[] ")
+				summary.StartTime = start
+				summary.EndTime = end
+			}
+		case strings.HasPrefix(line, "导出类型："):
+			summary.ExportType = strings.Trim(line[len("导出类型："):], "[]")
+		case strings.HasPrefix(line, "导出时间："):
+			summary.ExportTime = strings.Trim(line[len("导出时间："):], "[]")
+		case strings.HasPrefix(line, "共"):
+			numStr := strings.TrimPrefix(line, "共")
+			numStr = strings.TrimSuffix(numStr, "笔记录")
+			if n, err := strconv.Atoi(strings.TrimSpace(numStr)); err == nil {
+				summary.TotalRecords = n
+			}
+		case strings.HasPrefix(line, "收入："):
+			// 收入：5笔 548.00元
+			fmt.Sscanf(line, "收入：%d笔 %s", &summary.IncomeCount, &summary.IncomeAmount)
+		case strings.HasPrefix(line, "支出："):
+			fmt.Sscanf(line, "支出：%d笔 %s", &summary.ExpenseCount, &summary.ExpenseAmount)
+		case strings.HasPrefix(line, "中性交易："):
+			fmt.Sscanf(line, "中性交易：%d笔 %s", &summary.NeutralCount, &summary.NeutralAmount)
+		}
+		if i > 10 {
+			break
+		}
+	}
+	return summary, nil
+}
+
+// 去掉人民币符号 ¥ 并转成 float64
+func ParseAmount(s string) (float64, error) {
+	s = strings.TrimSpace(s)
+	s = strings.TrimPrefix(s, "¥")
+	return strconv.ParseFloat(s, 64)
 }
 
 // 阿里云CSV基本信息结构体

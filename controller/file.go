@@ -158,6 +158,173 @@ func UploadAlipayZIPHandler(c *gin.Context) {
 	})
 }
 
+// 微信账单XLSX文件上传接口
+func UploadWeChatXLSXHandler(c *gin.Context) {
+	// 获取上传的文件
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.Fail(c, 100008)
+		return
+	}
+	// 打开上传的文件
+	f, err := file.Open()
+	if err != nil {
+		response.Fail(c, 100007)
+		return
+	}
+	defer f.Close()
+	// 确保保存目录存在
+	saveDir := "./data/uploads"
+	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
+		response.Fail(c, 100009)
+		return
+	}
+	// 生成随机文件名
+	ext := filepath.Ext(file.Filename)
+	if ext == "" {
+		ext = ".xlsx"
+	}
+	newFileName := fmt.Sprintf("%s_%d%s", uuid.New().String(), time.Now().Unix(), ext)
+	dst := filepath.Join(saveDir, newFileName)
+	// 创建目标文件
+	outFile, err := os.Create(dst)
+	if err != nil {
+		response.Fail(c, 100007)
+		return
+	}
+	defer outFile.Close()
+	// 复制文件内容到目标文件（已经转成 UTF-8）
+	if _, err := io.Copy(outFile, f); err != nil {
+		response.Fail(c, 100007)
+		return
+	}
+	// 验证数据
+	records, err := helpers.ReadXLSX(dst)
+	if err != nil {
+		log.Fatal("读取失败:", err)
+		response.Fail(c, 100008)
+		return
+	}
+	xlsx, err := helpers.ParseWeChatXLSX(records)
+	if err != nil {
+		log.Fatal("读取失败:", err)
+		response.Fail(c, 100008)
+		return
+	}
+	if xlsx.Nickname == "" ||
+		xlsx.StartTime == "" ||
+		xlsx.EndTime == "" ||
+		xlsx.ExportType == "" ||
+		xlsx.ExportTime == "" ||
+		xlsx.TotalRecords == 0 {
+		response.Fail(c, 100010)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{
+		"path": dst,
+	})
+}
+
+// 微信账单ZIP文件上传接口
+func UploadWeChatZIPHandler(c *gin.Context) {
+	// 获取上传的文件
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.Fail(c, 100008)
+		return
+	}
+	// 打开上传的文件
+	f, err := file.Open()
+	if err != nil {
+		response.Fail(c, 100007)
+		return
+	}
+	defer f.Close()
+	// 确保保存目录存在
+	saveDir := "./data/uploads"
+	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
+		response.Fail(c, 100009)
+		return
+	}
+	// 生成随机文件名
+	ext := filepath.Ext(file.Filename)
+	if ext == "" {
+		ext = ".zip"
+	}
+	newFileName := fmt.Sprintf("%s_%d%s", uuid.New().String(), time.Now().Unix(), ext)
+	dst := filepath.Join(saveDir, newFileName)
+	// 创建目标文件
+	outFile, err := os.Create(dst)
+	if err != nil {
+		response.Fail(c, 100007)
+		return
+	}
+	defer outFile.Close()
+	// 写入文件内容
+	if _, err := io.Copy(outFile, f); err != nil {
+		response.Fail(c, 100007)
+		return
+	}
+	zipPassword := c.PostForm("zip_salt")
+	if zipPassword == "" {
+		password, err := helpers.CrackZipPassword(dst)
+		if err != nil {
+			response.Fail(c, 100015)
+			return
+		}
+		zipPassword = password
+	}
+	// 解压文件
+	path, unzip := helpers.UnzipWithPassword(dst, zipPassword)
+	if unzip != nil {
+		response.Fail(c, 100016)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{
+		"path": path,
+	})
+}
+
+// 获取微信XLSX概览信息请求体
+type GetWeChatXLSXOverviewRequest struct {
+	Path string `json:"path" binding:"required"` // XLSX路径
+}
+
+// 获取微信XLSX概览信息接口
+func GetWeChatXLSXOverviewHandler(c *gin.Context) {
+	// 获取参数
+	req := c.MustGet("payload").(GetWeChatXLSXOverviewRequest)
+	records, err := helpers.ReadXLSX(req.Path)
+	if err != nil {
+		log.Fatal("读取失败:", err)
+		response.Fail(c, 100008)
+		return
+	}
+	csv, err := helpers.ParseWeChatXLSX(records)
+	if err != nil {
+		log.Fatal("读取失败:", err)
+		response.Fail(c, 100008)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{
+		"nickname":       csv.Nickname,
+		"start_time":     csv.StartTime,
+		"end_time":       csv.EndTime,
+		"export_type":    csv.ExportType,
+		"export_time":    csv.ExportTime,
+		"total_records":  csv.TotalRecords,
+		"income_count":   csv.IncomeCount,
+		"income_amount":  csv.IncomeAmount,
+		"expense_count":  csv.ExpenseCount,
+		"expense_amount": csv.ExpenseAmount,
+		"neutral_count":  csv.NeutralCount,
+		"neutral_amount": csv.NeutralAmount,
+	})
+}
+
 // 获取支付宝CSV概览信息请求体
 type GetAlipayCSVOverviewRequest struct {
 	Path string `json:"path" binding:"required"` // CSV路径
@@ -300,12 +467,115 @@ func StoreAlipayCSVInfoHandler(c *gin.Context) {
 	response.Ok(c, gin.H{})
 }
 
-// 获取支付宝账单邮件请求体
+// 存储微信XLSX账单数据请求体
+type StoreWechatXLSXInfoRequest struct {
+	Path string `json:"path" binding:"required"` // CSV路径
+}
+
+// 存储微信XLSX账单数据接口
+func StoreWechatXLSXInfoHandler(c *gin.Context) {
+	layout := "2006-1-2 15:04:05"
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取请求参数
+	req, ok := c.MustGet("payload").(StoreWechatXLSXInfoRequest)
+	if !ok {
+		response.Fail(c, 100010)
+		return
+	}
+	// 读取 CSV
+	records, err := helpers.ReadXLSX(req.Path)
+	if err != nil {
+		response.Fail(c, 100008)
+		return
+	}
+	if len(records) <= 17 {
+		response.Fail(c, 100010)
+		return
+	}
+	// 开启事务
+	tx := config.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			response.Fail(c, 100011)
+		}
+	}()
+	for i := 17; i < len(records); i++ {
+		row := records[i]
+		if len(row) < 11 {
+			continue
+		}
+		// 去除多余的空格
+		for i := range row {
+			row[i] = strings.TrimSpace(row[i])
+		}
+		// 判断是否已存在
+		var exist model.BillRecord
+		if err := tx.Where("trade_no = ?", row[8]).First(&exist).Error; err == nil {
+			continue
+		}
+		// 解析时间
+		t, err := time.ParseInLocation(layout, row[0], time.Local)
+		if err != nil {
+			continue
+		}
+		// 解析金额
+		amount, err := helpers.ParseAmount(row[5])
+		if err != nil {
+			continue
+		}
+		// 构建记录
+		var paymentMethod string
+		if row[6] == "" {
+			paymentMethod = "未知"
+		} else {
+			paymentMethod = row[6]
+		}
+		bill := model.BillRecord{
+			UserID:          userID,
+			TradeNo:         row[8],
+			MerchantOrderNo: row[9],
+			Platform:        uint8(model.PlatformWechat),
+			IncomeType:      model.IncomeTypeFromString(row[4]),
+			TradeType:       row[1],
+			ProductName:     row[3],
+			Counterparty:    row[2],
+			PaymentMethod:   paymentMethod,
+			Amount:          amount,
+			TradeStatus:     row[7],
+			TradeTime:       t.Unix(),
+			Remark:          row[10],
+		}
+		if err := tx.Create(&bill).Error; err != nil {
+			tx.Rollback()
+			response.Fail(c, 100006)
+			return
+		}
+	}
+	if err := tx.Commit().Error; err != nil {
+		response.Fail(c, 100007)
+		return
+	}
+	// 返回数据
+	response.Ok(c, gin.H{})
+}
+
+// 获取支付宝账单邮件请求体 - 未来实现
 type GetAlipayBillMailRequest struct {
 	ID uint `json:"id" binding:"required"` // 邮箱ID
 }
 
-// 获取支付宝账单邮件接口
+// 获取支付宝账单邮件接口 - 未来实现
 func GetAlipayBillMailHandler(c *gin.Context) {
 	// 获取用户ID
 	userIDAny, exists := c.Get("user_id")
