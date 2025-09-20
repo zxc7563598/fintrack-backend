@@ -15,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/xuri/excelize/v2"
 	"github.com/yeka/zip"
@@ -22,6 +23,29 @@ import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 )
+
+func StartOfDay(t time.Time) time.Time {
+	y, m, d := t.Date()
+	return time.Date(y, m, d, 0, 0, 0, 0, t.Location())
+}
+
+func StartOfWeek(t time.Time) time.Time {
+	weekday := int(t.Weekday())
+	if weekday == 0 {
+		weekday = 7
+	}
+	return StartOfDay(t).AddDate(0, 0, -weekday+1)
+}
+
+func StartOfMonth(t time.Time) time.Time {
+	y, m, _ := t.Date()
+	return time.Date(y, m, 1, 0, 0, 0, 0, t.Location())
+}
+
+func StartOfYear(t time.Time) time.Time {
+	y := t.Year()
+	return time.Date(y, 1, 1, 0, 0, 0, 0, t.Location())
+}
 
 // 生成随机扰乱码
 func GenerateSalt(n int) ([]byte, error) {
