@@ -15,14 +15,17 @@ import (
 
 // 获取交易列表请求体
 type GetBillListRequest struct {
-	StartFormattedDate *string `json:"start_formatted_date"` // 开始日期
-	EndFormattedDate   *string `json:"end_formatted_date"`   // 结束日期
-	Search             *string `json:"search"`               // 搜索内容
-	IncomeType         *int    `json:"income_type"`          // 收支类型
-	Page               *int    `json:"page"`                 // 页码
-	ItemsPerPage       *int    `json:"items_per_page"`       // 每页条数
-	SortKey            *string `json:"sort_key"`             // 排序字段
-	SortOrder          *string `json:"sort_order"`           // 排序顺序
+	StartFormattedDate *string   `json:"start_formatted_date"` // 开始日期
+	EndFormattedDate   *string   `json:"end_formatted_date"`   // 结束日期
+	Search             *string   `json:"search"`               // 搜索内容
+	IncomeType         *int      `json:"income_type"`          // 收支类型
+	Page               *int      `json:"page"`                 // 页码
+	ItemsPerPage       *int      `json:"items_per_page"`       // 每页条数
+	SortKey            *string   `json:"sort_key"`             // 排序字段
+	SortOrder          *string   `json:"sort_order"`           // 排序顺序
+	PaymentMethod      *[]string `json:"payment_method"`       // 账户
+	Counterpartys      *[]string `json:"counterpartys"`        // 交易平台
+	TradeTypes         *[]string `json:"trade_types"`          // 交易分类
 }
 
 // 获取交易列表接口
@@ -78,6 +81,15 @@ func GetBillListHandler(c *gin.Context) {
 	}
 	if req.IncomeType != nil {
 		db = db.Where("income_type = ?", *req.IncomeType)
+	}
+	if req.Counterpartys != nil && len(*req.Counterpartys) > 0 {
+		db = db.Where("counterparty IN ?", *req.Counterpartys)
+	}
+	if req.PaymentMethod != nil && len(*req.PaymentMethod) > 0 {
+		db = db.Where("payment_method IN ?", *req.PaymentMethod)
+	}
+	if req.TradeTypes != nil && len(*req.TradeTypes) > 0 {
+		db = db.Where("trade_type IN ?", *req.TradeTypes)
 	}
 	// 计算总数
 	if err := db.Count(&total).Error; err != nil {
