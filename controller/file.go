@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -37,7 +36,7 @@ func UploadAlipayCSVHandler(c *gin.Context) {
 	}
 	defer f.Close()
 	// 确保保存目录存在
-	saveDir := "./data/uploads"
+	saveDir := helpers.GetDataPath("data", "uploads")
 	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
 		response.Fail(c, 100009)
 		return
@@ -66,13 +65,11 @@ func UploadAlipayCSVHandler(c *gin.Context) {
 	// 验证数据
 	records, err := helpers.ReadCSV(dst)
 	if err != nil {
-		log.Fatal("读取失败:", err)
 		response.Fail(c, 100008)
 		return
 	}
 	csv, err := helpers.ParseAlipayCSV(records)
 	if err != nil {
-		log.Fatal("读取失败:", err)
 		response.Fail(c, 100008)
 		return
 	}
@@ -108,7 +105,7 @@ func UploadAlipayZIPHandler(c *gin.Context) {
 	}
 	defer f.Close()
 	// 确保保存目录存在
-	saveDir := "./data/uploads"
+	saveDir := helpers.GetDataPath("data", "uploads")
 	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
 		response.Fail(c, 100009)
 		return
@@ -174,7 +171,7 @@ func UploadWeChatXLSXHandler(c *gin.Context) {
 	}
 	defer f.Close()
 	// 确保保存目录存在
-	saveDir := "./data/uploads"
+	saveDir := helpers.GetDataPath("data", "uploads")
 	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
 		response.Fail(c, 100009)
 		return
@@ -201,13 +198,11 @@ func UploadWeChatXLSXHandler(c *gin.Context) {
 	// 验证数据
 	records, err := helpers.ReadXLSX(dst)
 	if err != nil {
-		log.Fatal("读取失败:", err)
 		response.Fail(c, 100008)
 		return
 	}
 	xlsx, err := helpers.ParseWeChatXLSX(records)
 	if err != nil {
-		log.Fatal("读取失败:", err)
 		response.Fail(c, 100008)
 		return
 	}
@@ -242,7 +237,7 @@ func UploadWeChatZIPHandler(c *gin.Context) {
 	}
 	defer f.Close()
 	// 确保保存目录存在
-	saveDir := "./data/uploads"
+	saveDir := helpers.GetDataPath("data", "uploads")
 	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
 		response.Fail(c, 100009)
 		return
@@ -298,13 +293,11 @@ func GetWeChatXLSXOverviewHandler(c *gin.Context) {
 	req := c.MustGet("payload").(GetWeChatXLSXOverviewRequest)
 	records, err := helpers.ReadXLSX(req.Path)
 	if err != nil {
-		log.Fatal("读取失败:", err)
 		response.Fail(c, 100008)
 		return
 	}
 	csv, err := helpers.ParseWeChatXLSX(records)
 	if err != nil {
-		log.Fatal("读取失败:", err)
 		response.Fail(c, 100008)
 		return
 	}
@@ -336,13 +329,11 @@ func GetAlipayCSVOverviewHandler(c *gin.Context) {
 	req := c.MustGet("payload").(GetAlipayCSVOverviewRequest)
 	records, err := helpers.ReadCSV(req.Path)
 	if err != nil {
-		log.Fatal("读取失败:", err)
 		response.Fail(c, 100008)
 		return
 	}
 	csv, err := helpers.ParseAlipayCSV(records)
 	if err != nil {
-		log.Fatal("读取失败:", err)
 		response.Fail(c, 100008)
 		return
 	}

@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.0
 	github.com/wailsapp/wails/v2 v2.10.2
+	github.com/xuri/excelize/v2 v2.9.1
 	github.com/yeka/zip v0.0.0-20231116150916-03d6312748a9
 	golang.org/x/crypto v0.42.0
 	golang.org/x/text v0.29.0
@@ -66,7 +67,6 @@ require (
 	github.com/wailsapp/go-webview2 v1.0.19 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xuri/efp v0.0.1 // indirect
-	github.com/xuri/excelize/v2 v2.9.1 // indirect
 	github.com/xuri/nfp v0.0.1 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/net v0.44.0 // indirect

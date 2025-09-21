@@ -280,7 +280,6 @@ func tryPassword(filePath, password string) bool {
 		return false
 	}
 	defer r.Close()
-
 	buf := make([]byte, 16*1024)
 	for _, f := range r.File {
 		if f.IsEncrypted() {
@@ -318,65 +317,51 @@ func UnzipWithPassword(zipPath, password string) (string, error) {
 		return "", err
 	}
 	defer r.Close()
-
 	// 压缩包所在目录
 	baseDir := filepath.Dir(zipPath)
 	// 去掉扩展名作为文件夹名
 	zipName := strings.TrimSuffix(filepath.Base(zipPath), filepath.Ext(zipPath))
 	destDir := filepath.Join(baseDir, zipName)
-
 	// 创建解压目标文件夹
 	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
 		return "", err
 	}
-
 	var extractedFilePath string
-
 	for _, f := range r.File {
 		if f.IsEncrypted() {
 			f.SetPassword(password)
 		}
-
 		destPath := filepath.Join(destDir, f.Name)
-
 		if f.FileInfo().IsDir() {
 			if err := os.MkdirAll(destPath, os.ModePerm); err != nil {
 				return "", err
 			}
 			continue
 		}
-
 		if err := os.MkdirAll(filepath.Dir(destPath), os.ModePerm); err != nil {
 			return "", err
 		}
-
 		rc, err := f.Open()
 		if err != nil {
 			return "", err
 		}
-
 		outFile, err := os.Create(destPath)
 		if err != nil {
 			rc.Close()
 			return "", err
 		}
-
 		if _, err := io.Copy(outFile, rc); err != nil {
 			rc.Close()
 			outFile.Close()
 			return "", err
 		}
-
 		rc.Close()
 		outFile.Close()
-
 		extractedFilePath = destPath
 	}
-
 	if extractedFilePath == "" {
 		return "", fmt.Errorf("没有解压出文件")
 	}
-
 	return extractedFilePath, nil
 }
 
@@ -400,4 +385,46 @@ func ConvertCSVGBKToUTF8(csvPath string) (string, error) {
 		return "", err
 	}
 	return outPath, err
+}
+
+// 拼接绝对路径，兼容桌面应用和服务器模式
+func GetDataPath(elem ...string) string {
+	var baseDir string
+	exePath, err := os.Executable()
+	if err != nil {
+		// 获取可执行文件失败，fallback 到当前工作目录
+		cwd, _ := os.Getwd()
+		baseDir = cwd
+	} else {
+		exeDir := filepath.Dir(exePath)
+		switch runtime.GOOS {
+		case "darwin":
+			// macOS 桌面应用：如果 exe 路径包含 .app/Contents/MacOS，就认为是打包应用
+			if filepath.Base(filepath.Dir(filepath.Dir(exeDir))) == ".app" || filepath.Ext(filepath.Dir(filepath.Dir(exeDir))) == ".app" {
+				homeDir, _ := os.UserHomeDir()
+				baseDir = filepath.Join(homeDir, "Library", "Application Support", "FinancialManagement")
+			} else {
+				// 开发模式或命令行运行
+				baseDir = exeDir
+			}
+		case "windows":
+			// Windows 打包应用
+			appData := os.Getenv("APPDATA")
+			if appData != "" {
+				baseDir = filepath.Join(appData, "FinancialManagement")
+			} else {
+				baseDir = exeDir
+			}
+		default:
+			// 其他平台（Linux/服务器）
+			baseDir = exeDir
+		}
+	}
+	// 拼接最终路径
+	finalPath := filepath.Join(append([]string{baseDir}, elem...)...)
+	// 确保目录存在
+	if err := os.MkdirAll(finalPath, os.ModePerm); err != nil {
+		panic(err)
+	}
+	return finalPath
 }
