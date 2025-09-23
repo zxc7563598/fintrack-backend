@@ -68,6 +68,26 @@
     "translation": "解压失败，密码错误"
   },
   {
+    "id": "100017",
+    "translation": "您暂时还没有交易账户"
+  },
+  {
+    "id": "100018",
+    "translation": "请先绑定 deepseek API key 后再进行操作"
+  },
+  {
+    "id": "100019",
+    "translation": "deepseek 响应失败，网络异常"
+  },
+  {
+    "id": "100020",
+    "translation": "deepseek 响应数据解析失败"
+  },
+  {
+    "id": "100021",
+    "translation": "用户账户分类变更失败"
+  },
+  {
     "id": "200002",
     "translation": "登陆凭证生成失败"
   },

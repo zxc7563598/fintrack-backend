@@ -33,6 +33,9 @@ func SetupRouter() *gin.Engine {
 		authGroup.POST("/user/email/delete", middleware.DecryptMiddleware[controller.DeleteUserEmailRequest](), controller.DeleteUserEmailHandler)
 		authGroup.POST("/user/deepseek/api-key", controller.GetDeepseekApiKeyHandler)
 		authGroup.POST("/user/deepseek/api-key/store", middleware.DecryptMiddleware[controller.StoreDeepseekApiKeyRequest](), controller.StoreDeepseekApiKeyHandler)
+		authGroup.POST("/user/payment-method", controller.GetPaymentMethodHandler)
+		authGroup.POST("/user/payment-method/organize", controller.OrganizePaymentMethodHandler)
+		authGroup.POST("/user/payment-method/store", middleware.DecryptMiddleware[controller.StorePaymentMethodRequest](), controller.StorePaymentMethodHandler)
 
 		authGroup.POST("/bills", middleware.DecryptMiddleware[controller.GetBillListRequest](), controller.GetBillListHandler)
 		authGroup.POST("/bills/calendar", middleware.DecryptMiddleware[controller.GetBillCalendarRequest](), controller.GetBillCalendarHandler)

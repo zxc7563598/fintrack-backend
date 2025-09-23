@@ -2,12 +2,17 @@ package controller
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"strings"
 
+	"github.com/cohesion-org/deepseek-go"
 	"github.com/zxc7563598/fintrack-backend/config"
 	"github.com/zxc7563598/fintrack-backend/dto"
 	"github.com/zxc7563598/fintrack-backend/jwt"
 	"github.com/zxc7563598/fintrack-backend/model"
+	"github.com/zxc7563598/fintrack-backend/service"
+	"github.com/zxc7563598/fintrack-backend/service/ai"
 	"github.com/zxc7563598/fintrack-backend/utils/helpers"
 	"github.com/zxc7563598/fintrack-backend/utils/response"
 	"gorm.io/gorm"
@@ -290,6 +295,139 @@ func StoreDeepseekApiKeyHandler(c *gin.Context) {
 	if err != nil {
 		response.Fail(c, 100013)
 		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{})
+}
+
+// 获取用户账户分类接口
+func GetPaymentMethodHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取用户分类
+	var paymentMethod []string
+	if err := config.DB.Model(&model.BillRecord{}).
+		Distinct("payment_method").
+		Where("user_id = ?", userID).
+		Pluck("payment_method", &paymentMethod).Error; err != nil {
+		response.Fail(c, 100001)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{
+		"payment_method": paymentMethod,
+	})
+}
+
+// 整理用户账户分类接口
+func OrganizePaymentMethodHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取用户分类
+	var paymentMethod []string
+	if err := config.DB.Model(&model.BillRecord{}).
+		Distinct("payment_method").
+		Where("user_id = ?", userID).
+		Pluck("payment_method", &paymentMethod).Error; err != nil {
+		response.Fail(c, 100001)
+		return
+	}
+	if len(paymentMethod) <= 0 {
+		response.Fail(c, 100017)
+		return
+	}
+	paymentMethodStr := strings.Join(paymentMethod, ",")
+	// 获取用户DeepseekAPIKey
+	var apiKey string
+	err := config.DB.Model(&model.User{}).Select("deepseek_api_key").Where("id = ?", userID).Scan(&apiKey).Error
+	if err != nil {
+		response.Fail(c, 100018)
+		return
+	}
+	// 初始化 client
+	aiClient := &ai.AIClient{
+		Client: deepseek.NewClient(apiKey),
+	}
+	// 初始化 service（也可以复用同一个 service 结构体，只是传入不同 client）
+	classifier := service.NewBillClassifier(aiClient) // aiClient 事先初始化过
+	ctx := c.Request.Context()
+	classifyResultJSON, err := classifier.Classify(ctx, paymentMethodStr)
+	if err != nil {
+		response.Fail(c, 100019)
+		return
+	}
+	// classifyResultJSON 是 JSON 字符串，转换成 map 更方便前端使用
+	var classifyResult map[string]string
+	if err := json.Unmarshal([]byte(classifyResultJSON), &classifyResult); err != nil {
+		response.Fail(c, 100020)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{
+		"list": classifyResult,
+	})
+}
+
+// 存储用户账户分类结构体
+type PaymentMethodUpdate struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+type StorePaymentMethodRequest struct {
+	PaymentMethod []PaymentMethodUpdate `json:"payment_method"`
+}
+
+// 存储用户账户分类接口
+func StorePaymentMethodHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取请求参数
+	req, ok := c.MustGet("payload").(StorePaymentMethodRequest)
+	if !ok {
+		response.Fail(c, 100010)
+		return
+	}
+	// 遍历请求里的每个映射关系，批量更新
+	for _, pm := range req.PaymentMethod {
+		oldValue := pm.Key
+		newValue := pm.Value
+		if oldValue == "" || newValue == "" {
+			continue
+		}
+		// 执行更新
+		if err := config.DB.Model(&model.BillRecord{}).
+			Where("user_id = ? AND payment_method = ?", userID, oldValue).
+			Update("payment_method", newValue).Error; err != nil {
+			response.Fail(c, 100021)
+			return
+		}
 	}
 	// 返回成功
 	response.Ok(c, gin.H{})
