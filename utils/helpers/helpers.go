@@ -428,3 +428,11 @@ func GetDataPath(elem ...string) string {
 	}
 	return finalPath
 }
+
+// 声明用于格式化订单金额
+type Money float64
+
+func (m Money) MarshalJSON() ([]byte, error) {
+	s := fmt.Sprintf("%.2f", m)
+	return []byte(s), nil
+}

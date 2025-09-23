@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/zxc7563598/fintrack-backend/config"
@@ -12,33 +11,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Money float64
-
-func (m Money) MarshalJSON() ([]byte, error) {
-	s := fmt.Sprintf("%.2f", m)
-	return []byte(s), nil
-}
-
 type MonthlyStat struct {
-	Year    int   `json:"year"`
-	Month   int   `json:"month"`
-	Income  Money `json:"income"`
-	Expense Money `json:"expense"`
+	Year    int           `json:"year"`
+	Month   int           `json:"month"`
+	Income  helpers.Money `json:"income"`
+	Expense helpers.Money `json:"expense"`
 }
 
 type BillSummary struct {
 	TotalCount   int64         `json:"total_count"`
 	LastRecord   int64         `json:"last_record"`
-	TotalIncome  Money         `json:"total_income"`
-	TotalExpense Money         `json:"total_expense"`
-	TodayIncome  Money         `json:"today_income"`
-	TodayExpense Money         `json:"today_expense"`
-	WeekIncome   Money         `json:"week_income"`
-	WeekExpense  Money         `json:"week_expense"`
-	MonthIncome  Money         `json:"month_income"`
-	MonthExpense Money         `json:"month_expense"`
-	YearIncome   Money         `json:"year_income"`
-	YearExpense  Money         `json:"year_expense"`
+	TotalIncome  helpers.Money `json:"total_income"`
+	TotalExpense helpers.Money `json:"total_expense"`
+	TodayIncome  helpers.Money `json:"today_income"`
+	TodayExpense helpers.Money `json:"today_expense"`
+	WeekIncome   helpers.Money `json:"week_income"`
+	WeekExpense  helpers.Money `json:"week_expense"`
+	MonthIncome  helpers.Money `json:"month_income"`
+	MonthExpense helpers.Money `json:"month_expense"`
+	YearIncome   helpers.Money `json:"year_income"`
+	YearExpense  helpers.Money `json:"year_expense"`
 	Last12Months []MonthlyStat `json:"last12_months"`
 }
 
@@ -66,8 +58,8 @@ func AssetOverviewHandler(c *gin.Context) {
 		Where("user_id = ?", userID).
 		Select("SUM(CASE WHEN income_type = 1 THEN amount ELSE 0 END) as income, SUM(CASE WHEN income_type = 2 THEN amount ELSE 0 END) as expense, COUNT(*) as count").
 		Scan(&agg)
-	summary.TotalIncome = Money(agg.Income)
-	summary.TotalExpense = Money(agg.Expense)
+	summary.TotalIncome = helpers.Money(agg.Income)
+	summary.TotalExpense = helpers.Money(agg.Expense)
 	summary.TotalCount = agg.Count
 	// 最新一条记录
 	var times []int64
@@ -101,37 +93,37 @@ func AssetOverviewHandler(c *gin.Context) {
 		// 本年收入/支出
 		if t.After(yearStart) || t.Equal(yearStart) {
 			if r.IncomeType == 1 {
-				summary.YearIncome += Money(amt)
+				summary.YearIncome += helpers.Money(amt)
 			}
 			if r.IncomeType == 2 {
-				summary.YearExpense += Money(amt)
+				summary.YearExpense += helpers.Money(amt)
 			}
 		}
 		// 本月收入/支出
 		if t.After(monthStart) || t.Equal(monthStart) {
 			if r.IncomeType == 1 {
-				summary.MonthIncome += Money(amt)
+				summary.MonthIncome += helpers.Money(amt)
 			}
 			if r.IncomeType == 2 {
-				summary.MonthExpense += Money(amt)
+				summary.MonthExpense += helpers.Money(amt)
 			}
 		}
 		// 本周收入/支出
 		if t.After(weekStart) || t.Equal(weekStart) {
 			if r.IncomeType == 1 {
-				summary.WeekIncome += Money(amt)
+				summary.WeekIncome += helpers.Money(amt)
 			}
 			if r.IncomeType == 2 {
-				summary.WeekExpense += Money(amt)
+				summary.WeekExpense += helpers.Money(amt)
 			}
 		}
 		// 今日收入/支出
 		if t.After(todayStart) || t.Equal(todayStart) {
 			if r.IncomeType == 1 {
-				summary.TodayIncome += Money(amt)
+				summary.TodayIncome += helpers.Money(amt)
 			}
 			if r.IncomeType == 2 {
-				summary.TodayExpense += Money(amt)
+				summary.TodayExpense += helpers.Money(amt)
 			}
 		}
 		// 最近12个月收入/支出
@@ -139,10 +131,10 @@ func AssetOverviewHandler(c *gin.Context) {
 			m := summary.Last12Months[i]
 			if t.Year() == m.Year && int(t.Month()) == m.Month {
 				if r.IncomeType == 1 {
-					summary.Last12Months[i].Income += Money(amt)
+					summary.Last12Months[i].Income += helpers.Money(amt)
 				}
 				if r.IncomeType == 2 {
-					summary.Last12Months[i].Expense += Money(amt)
+					summary.Last12Months[i].Expense += helpers.Money(amt)
 				}
 				break
 			}

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/zxc7563598/fintrack-backend/config"
 	"github.com/zxc7563598/fintrack-backend/model"
+	"github.com/zxc7563598/fintrack-backend/utils/helpers"
 	"github.com/zxc7563598/fintrack-backend/utils/response"
 )
 
@@ -21,8 +22,8 @@ type GetStatisticsRequest struct {
 }
 
 type AmountSummary struct {
-	IncomeTotal  float64 `json:"income_total"`
-	ExpenseTotal float64 `json:"expense_total"`
+	IncomeTotal  helpers.Money `json:"income_total"`
+	ExpenseTotal helpers.Money `json:"expense_total"`
 }
 
 // 账户收支（分类图）
@@ -88,14 +89,14 @@ func AccountBalanceCategoryHandler(c *gin.Context) {
 	}
 	// 返回成功
 	response.Ok(c, gin.H{
-		"income_total":  summary.IncomeTotal,
-		"expense_total": summary.ExpenseTotal,
+		"income_total":  helpers.Money(summary.IncomeTotal),
+		"expense_total": helpers.Money(summary.ExpenseTotal),
 	})
 }
 
 type TradeTypeIncome struct {
-	TradeType   string  `json:"trade_type"`
-	IncomeTotal float64 `json:"income_total"`
+	TradeType   string        `json:"trade_type"`
+	IncomeTotal helpers.Money `json:"income_total"`
 }
 
 // 收入分类（分类图）
@@ -167,8 +168,8 @@ func IncomeCategoryHandler(c *gin.Context) {
 }
 
 type TradeTypeExpense struct {
-	TradeType    string  `json:"trade_type"`
-	ExpenseTotal float64 `json:"expense_total"`
+	TradeType    string        `json:"trade_type"`
+	ExpenseTotal helpers.Money `json:"expense_total"`
 }
 
 // 支出分类（分类图）
@@ -240,8 +241,8 @@ func ExpenseCategoryHandler(c *gin.Context) {
 }
 
 type PaymentMethodIncome struct {
-	PaymentMethod string  `json:"payment_method"`
-	Amount        float64 `json:"amount"`
+	PaymentMethod string        `json:"payment_method"`
+	Amount        helpers.Money `json:"amount"`
 }
 
 // 收入账户（分类图）
@@ -313,8 +314,8 @@ func IncomeAccountCategoryHandler(c *gin.Context) {
 }
 
 type PaymentMethodExpense struct {
-	PaymentMethod string  `json:"payment_method"`
-	Amount        float64 `json:"amount"`
+	PaymentMethod string        `json:"payment_method"`
+	Amount        helpers.Money `json:"amount"`
 }
 
 // 支出账户（分类图）
@@ -450,9 +451,9 @@ func AccountBalanceTrendHandler(c *gin.Context) {
 	}
 	// 查询数据
 	type IncomeTypeMonth struct {
-		IncomeType string  `json:"income_type"`
-		Month      string  `json:"month"`
-		Amount     float64 `json:"amount"`
+		IncomeType string        `json:"income_type"`
+		Month      string        `json:"month"`
+		Amount     helpers.Money `json:"amount"`
 	}
 	var results []IncomeTypeMonth
 	err := db.
@@ -490,26 +491,26 @@ func AccountBalanceTrendHandler(c *gin.Context) {
 		incomeType = append(incomeType, k)
 	}
 	// 构建 map[tradeType][month]float64，并填充0
-	dataMap := map[string]map[string]float64{}
+	dataMap := map[string]map[string]helpers.Money{}
 	for _, account := range incomeType {
-		dataMap[account] = map[string]float64{}
+		dataMap[account] = map[string]helpers.Money{}
 		for _, m := range months {
 			dataMap[account][m] = 0
 		}
 	}
 	for _, r := range results {
-		dataMap[r.IncomeType][r.Month] = r.Amount
+		dataMap[r.IncomeType][r.Month] = helpers.Money(r.Amount)
 	}
 	// 构建前端折线图格式
 	type LineData struct {
-		IncomeType string    `json:"income_type"`
-		Data       []float64 `json:"data"`
+		IncomeType string          `json:"income_type"`
+		Data       []helpers.Money `json:"data"`
 	}
 	lineData := []LineData{}
 	for _, account := range incomeType {
-		row := LineData{IncomeType: account, Data: []float64{}}
+		row := LineData{IncomeType: account, Data: []helpers.Money{}}
 		for _, m := range months {
-			row.Data = append(row.Data, dataMap[account][m])
+			row.Data = append(row.Data, helpers.Money(dataMap[account][m]))
 		}
 		lineData = append(lineData, row)
 	}
@@ -586,9 +587,9 @@ func IncomeCategoryTrendHandler(c *gin.Context) {
 	}
 	// 查询数据
 	type TradeTypeMonthIncome struct {
-		TradeType string  `json:"trade_type"`
-		Month     string  `json:"month"`
-		Income    float64 `json:"income"`
+		TradeType string        `json:"trade_type"`
+		Month     string        `json:"month"`
+		Income    helpers.Money `json:"income"`
 	}
 	var results []TradeTypeMonthIncome
 	err := db.
@@ -627,26 +628,26 @@ func IncomeCategoryTrendHandler(c *gin.Context) {
 		tradeTypes = append(tradeTypes, k)
 	}
 	// 构建 map[tradeType][month]float64，并填充0
-	dataMap := map[string]map[string]float64{}
+	dataMap := map[string]map[string]helpers.Money{}
 	for _, trade := range tradeTypes {
-		dataMap[trade] = map[string]float64{}
+		dataMap[trade] = map[string]helpers.Money{}
 		for _, m := range months {
 			dataMap[trade][m] = 0
 		}
 	}
 	for _, r := range results {
-		dataMap[r.TradeType][r.Month] = r.Income
+		dataMap[r.TradeType][r.Month] = helpers.Money(r.Income)
 	}
 	// 构建前端折线图格式
 	type LineData struct {
-		TradeType string    `json:"trade_type"`
-		Data      []float64 `json:"data"`
+		TradeType string          `json:"trade_type"`
+		Data      []helpers.Money `json:"data"`
 	}
 	lineData := []LineData{}
 	for _, trade := range tradeTypes {
-		row := LineData{TradeType: trade, Data: []float64{}}
+		row := LineData{TradeType: trade, Data: []helpers.Money{}}
 		for _, m := range months {
-			row.Data = append(row.Data, dataMap[trade][m])
+			row.Data = append(row.Data, helpers.Money(dataMap[trade][m]))
 		}
 		lineData = append(lineData, row)
 	}
@@ -723,9 +724,9 @@ func ExpenseCategoryTrendHandler(c *gin.Context) {
 	}
 	// 查询数据
 	type TradeTypeMonthExpense struct {
-		TradeType string  `json:"trade_type"`
-		Month     string  `json:"month"`
-		Expense   float64 `json:"expense"`
+		TradeType string        `json:"trade_type"`
+		Month     string        `json:"month"`
+		Expense   helpers.Money `json:"expense"`
 	}
 	var results []TradeTypeMonthExpense
 	err := db.
@@ -764,26 +765,26 @@ func ExpenseCategoryTrendHandler(c *gin.Context) {
 		tradeTypes = append(tradeTypes, k)
 	}
 	// 构建 map[tradeType][month]float64，并填充0
-	dataMap := map[string]map[string]float64{}
+	dataMap := map[string]map[string]helpers.Money{}
 	for _, trade := range tradeTypes {
-		dataMap[trade] = map[string]float64{}
+		dataMap[trade] = map[string]helpers.Money{}
 		for _, m := range months {
 			dataMap[trade][m] = 0
 		}
 	}
 	for _, r := range results {
-		dataMap[r.TradeType][r.Month] = r.Expense
+		dataMap[r.TradeType][r.Month] = helpers.Money(r.Expense)
 	}
 	// 构建前端折线图格式
 	type LineData struct {
-		TradeType string    `json:"trade_type"`
-		Data      []float64 `json:"data"`
+		TradeType string          `json:"trade_type"`
+		Data      []helpers.Money `json:"data"`
 	}
 	lineData := []LineData{}
 	for _, trade := range tradeTypes {
-		row := LineData{TradeType: trade, Data: []float64{}}
+		row := LineData{TradeType: trade, Data: []helpers.Money{}}
 		for _, m := range months {
-			row.Data = append(row.Data, dataMap[trade][m])
+			row.Data = append(row.Data, helpers.Money(dataMap[trade][m]))
 		}
 		lineData = append(lineData, row)
 	}
@@ -860,9 +861,9 @@ func IncomeAccountTrendHandler(c *gin.Context) {
 	}
 	// 查询数据
 	type TradeTypeMonthIncome struct {
-		PaymentMethod string  `json:"payment_method"`
-		Month         string  `json:"month"`
-		Income        float64 `json:"income"`
+		PaymentMethod string        `json:"payment_method"`
+		Month         string        `json:"month"`
+		Income        helpers.Money `json:"income"`
 	}
 	var results []TradeTypeMonthIncome
 	err := db.
@@ -901,26 +902,26 @@ func IncomeAccountTrendHandler(c *gin.Context) {
 		paymentMethod = append(paymentMethod, k)
 	}
 	// 构建 map[paymentMethod][month]float64，并填充0
-	dataMap := map[string]map[string]float64{}
+	dataMap := map[string]map[string]helpers.Money{}
 	for _, method := range paymentMethod {
-		dataMap[method] = map[string]float64{}
+		dataMap[method] = map[string]helpers.Money{}
 		for _, m := range months {
 			dataMap[method][m] = 0
 		}
 	}
 	for _, r := range results {
-		dataMap[r.PaymentMethod][r.Month] = r.Income
+		dataMap[r.PaymentMethod][r.Month] = helpers.Money(r.Income)
 	}
 	// 构建前端折线图格式
 	type LineData struct {
-		PaymentMethod string    `json:"payment_method"`
-		Data          []float64 `json:"data"`
+		PaymentMethod string          `json:"payment_method"`
+		Data          []helpers.Money `json:"data"`
 	}
 	lineData := []LineData{}
 	for _, method := range paymentMethod {
-		row := LineData{PaymentMethod: method, Data: []float64{}}
+		row := LineData{PaymentMethod: method, Data: []helpers.Money{}}
 		for _, m := range months {
-			row.Data = append(row.Data, dataMap[method][m])
+			row.Data = append(row.Data, helpers.Money(dataMap[method][m]))
 		}
 		lineData = append(lineData, row)
 	}
@@ -997,9 +998,9 @@ func ExpenseAccountTrendHandler(c *gin.Context) {
 	}
 	// 查询数据
 	type TradeTypeMonthExpense struct {
-		PaymentMethod string  `json:"payment_method"`
-		Month         string  `json:"month"`
-		Expense       float64 `json:"expense"`
+		PaymentMethod string        `json:"payment_method"`
+		Month         string        `json:"month"`
+		Expense       helpers.Money `json:"expense"`
 	}
 	var results []TradeTypeMonthExpense
 	err := db.
@@ -1038,26 +1039,26 @@ func ExpenseAccountTrendHandler(c *gin.Context) {
 		paymentMethod = append(paymentMethod, k)
 	}
 	// 构建 map[paymentMethod][month]float64，并填充0
-	dataMap := map[string]map[string]float64{}
+	dataMap := map[string]map[string]helpers.Money{}
 	for _, method := range paymentMethod {
-		dataMap[method] = map[string]float64{}
+		dataMap[method] = map[string]helpers.Money{}
 		for _, m := range months {
 			dataMap[method][m] = 0
 		}
 	}
 	for _, r := range results {
-		dataMap[r.PaymentMethod][r.Month] = r.Expense
+		dataMap[r.PaymentMethod][r.Month] = helpers.Money(r.Expense)
 	}
 	// 构建前端折线图格式
 	type LineData struct {
-		PaymentMethod string    `json:"payment_method"`
-		Data          []float64 `json:"data"`
+		PaymentMethod string          `json:"payment_method"`
+		Data          []helpers.Money `json:"data"`
 	}
 	lineData := []LineData{}
 	for _, method := range paymentMethod {
-		row := LineData{PaymentMethod: method, Data: []float64{}}
+		row := LineData{PaymentMethod: method, Data: []helpers.Money{}}
 		for _, m := range months {
-			row.Data = append(row.Data, dataMap[method][m])
+			row.Data = append(row.Data, helpers.Money(dataMap[method][m]))
 		}
 		lineData = append(lineData, row)
 	}
