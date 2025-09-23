@@ -65,8 +65,8 @@ func runWailsMode() {
 	// 创建应用选项
 	err := wails.Run(&options.App{
 		Title:  "财务管理系统",
-		Width:  1200,
-		Height: 800,
+		Width:  1440,
+		Height: 900,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
