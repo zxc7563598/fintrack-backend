@@ -227,3 +227,70 @@ func DeleteUserEmailHandler(c *gin.Context) {
 	// 返回成功
 	response.Ok(c, gin.H{})
 }
+
+// 获取用户DeepseekApiKey接口
+func GetDeepseekApiKeyHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取数据
+	var key string
+	if err := config.DB.Model(&model.User{}).
+		Distinct("deepseek_api_key").
+		Where("id = ?", userID).
+		Pluck("deepseek_api_key", &key).Error; err != nil {
+		response.Fail(c, 100001)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{
+		"key": key,
+	})
+}
+
+// 存储用户DeepseekApiKey请求体
+type StoreDeepseekApiKeyRequest struct {
+	Key string `json:"key" binding:"required"`
+}
+
+// 存储用户DeepseekApiKey接口
+func StoreDeepseekApiKeyHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取请求参数
+	req, ok := c.MustGet("payload").(StoreDeepseekApiKeyRequest)
+	if !ok {
+		response.Fail(c, 100010)
+		return
+	}
+	// 存储数据
+	user := model.User{
+		DeepseekApiKey: req.Key,
+	}
+	err := config.DB.Model(&model.User{}).
+		Where("id = ?", userID).
+		Updates(user).Error
+	if err != nil {
+		response.Fail(c, 100013)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{})
+}
