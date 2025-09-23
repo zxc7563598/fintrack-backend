@@ -49,6 +49,17 @@ func SetupRouter() *gin.Engine {
 		authGroup.POST("/file/wechat/store", middleware.DecryptMiddleware[controller.StoreWechatXLSXInfoRequest](), controller.StoreWechatXLSXInfoHandler)
 
 		authGroup.POST("/file/alipay/email", middleware.DecryptMiddleware[controller.GetAlipayBillMailRequest](), controller.GetAlipayBillMailHandler)
+
+		authGroup.POST("/statistics/account/category", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.AccountBalanceCategoryHandler)
+		authGroup.POST("/statistics/income/category", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.IncomeCategoryHandler)
+		authGroup.POST("/statistics/expense/category", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.ExpenseCategoryHandler)
+		authGroup.POST("/statistics/income/account/category", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.IncomeAccountCategoryHandler)
+		authGroup.POST("/statistics/expense/account/category", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.ExpenseAccountCategoryHandler)
+		authGroup.POST("/statistics/account-balance/trend", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.AccountBalanceTrendHandler)
+		authGroup.POST("/statistics/income/trend", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.IncomeCategoryTrendHandler)
+		authGroup.POST("/statistics/expense/trend", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.ExpenseCategoryTrendHandler)
+		authGroup.POST("/statistics/income/account/trend", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.IncomeAccountTrendHandler)
+		authGroup.POST("/statistics/expense/account/trend", middleware.DecryptMiddleware[controller.GetStatisticsRequest](), controller.ExpenseAccountTrendHandler)
 	}
 	return r
 }
