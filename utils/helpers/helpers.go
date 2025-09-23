@@ -405,7 +405,7 @@ func GetDataPath(elem ...string) string {
 				baseDir = filepath.Join(homeDir, "Library", "Application Support", "FinancialManagement")
 			} else {
 				// 开发模式或命令行运行
-				baseDir = exeDir
+				baseDir = ""
 			}
 		case "windows":
 			// Windows 打包应用
@@ -413,11 +413,11 @@ func GetDataPath(elem ...string) string {
 			if appData != "" {
 				baseDir = filepath.Join(appData, "FinancialManagement")
 			} else {
-				baseDir = exeDir
+				baseDir = ""
 			}
 		default:
 			// 其他平台（Linux/服务器）
-			baseDir = exeDir
+			baseDir = ""
 		}
 	}
 	// 拼接最终路径
