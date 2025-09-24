@@ -1,7 +1,7 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "财务管理系统",
-  "outputfilename": "财务管理系统",
+  "name": "FinBoard",
+  "outputfilename": "FinBoard",
   "frontend:install": "",
   "frontend:build": "",
   "frontend:dev:watcher": "",
@@ -10,9 +10,9 @@
     "email": "junjie.he.925@gmail.com"
   },
   "info": {
-    "productName": "财务管理系统",
+    "productName": "FinBoard",
     "productVersion": "1.0.0",
-    "copyright": "Copyright © 2024, 财务管理系统 Team",
+    "copyright": "Copyright © 2024, FinBoard Team",
     "comments": "个人财务追踪应用程序"
   },
   "nsisType": "multiple",

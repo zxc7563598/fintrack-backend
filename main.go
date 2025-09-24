@@ -41,7 +41,7 @@ func main() {
 }
 
 func runServerMode() {
-	log.Println("🚀 将财务管理系统作为服务器web端启动...")
+	log.Println("🚀 将FinBoard作为服务器web端启动...")
 	// 初始化配置
 	config.SetConfigFS(configFile)
 	config.InitConfig()
@@ -59,12 +59,12 @@ func runServerMode() {
 }
 
 func runWailsMode() {
-	log.Println("🖥️  将财务管理系统作为桌面应用程序启动...")
+	log.Println("🖥️  将FinBoard作为桌面应用程序启动...")
 	// 创建应用实例
 	app := NewApp()
 	// 创建应用选项
 	err := wails.Run(&options.App{
-		Title:  "财务管理系统",
+		Title:  "FinBoard",
 		Width:  1440,
 		Height: 900,
 		AssetServer: &assetserver.Options{

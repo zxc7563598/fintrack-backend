@@ -65,7 +65,7 @@ func (a *App) OnShutdown(ctx context.Context) {
 // 获取应用信息
 func (a *App) GetAppInfo() map[string]interface{} {
 	return map[string]interface{}{
-		"name":    "财务管理系统",
+		"name":    "FinBoard",
 		"version": "1.0.0",
 		"mode":    "desktop",
 	}
