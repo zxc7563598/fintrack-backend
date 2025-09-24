@@ -68,6 +68,34 @@
     "translation": "Decompression failed, incorrect password"
   },
   {
+    "id": "100017",
+    "translation": "You don’t have a trading account yet"
+  },
+  {
+    "id": "100018",
+    "translation": "Please bind the DeepSeek API key before proceeding"
+  },
+  {
+    "id": "100019",
+    "translation": "DeepSeek response failed, network error"
+  },
+  {
+    "id": "100020",
+    "translation": "Failed to parse DeepSeek response data"
+  },
+  {
+    "id": "100021",
+    "translation": "Failed to change user account classification"
+  },
+  {
+    "id": "100022",
+    "translation": "Password encryption error"
+  },
+  {
+    "id": "100023",
+    "translation": "Data storage failed"
+  },
+  {
     "id": "200002",
     "translation": "Failed to generate login credential"
   },

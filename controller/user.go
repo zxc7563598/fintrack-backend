@@ -45,7 +45,8 @@ func LoginRegisterHandler(c *gin.Context) {
 	// 创建用户
 	salt, err := helpers.GenerateSalt(16)
 	if err != nil {
-		panic(err)
+		response.Fail(c, 100022)
+		return
 	}
 	hash := helpers.HashPassword(req.Password, salt)
 	created := config.DB.Create(&model.User{
@@ -428,6 +429,86 @@ func StorePaymentMethodHandler(c *gin.Context) {
 			response.Fail(c, 100021)
 			return
 		}
+	}
+	// 返回成功
+	response.Ok(c, gin.H{})
+}
+
+// 获取用户账号信息接口
+func GetUserInfoHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取用户分类
+	var user dto.UserAccountItem
+	if err := config.DB.Model(&model.User{}).Where("id = ?", userID).First(&user).Error; err != nil {
+		response.Fail(c, 100001)
+		return
+	}
+	// 返回成功
+	response.Ok(c, gin.H{
+		"name":  user.Name,
+		"email": user.Email,
+	})
+}
+
+// 存储用户账号信息请求体
+type StoreUserInfoRequest struct {
+	Name     string  `json:"name" binding:"required"`  // 用户昵称
+	Email    string  `json:"email" binding:"required"` // 用户邮箱
+	Password *string `json:"password"`                 // 用户密码
+}
+
+// 存储用户账号信息接口
+func StoreUserInfoHandler(c *gin.Context) {
+	// 获取用户ID
+	userIDAny, exists := c.Get("user_id")
+	if !exists {
+		response.Fail(c, 300001)
+		return
+	}
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.Fail(c, 300002)
+		return
+	}
+	// 获取请求参数
+	req, ok := c.MustGet("payload").(StoreUserInfoRequest)
+	if !ok {
+		response.Fail(c, 100010)
+		return
+	}
+	// 查找用户
+	var user model.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		response.Fail(c, 100002)
+		return
+	}
+	// 更新字段
+	user.Name = req.Name
+	user.Email = req.Email
+	if req.Password != nil && *req.Password != "" {
+		salt, err := helpers.GenerateSalt(16)
+		if err != nil {
+			response.Fail(c, 100022)
+			return
+		}
+		hash := helpers.HashPassword(*req.Password, salt)
+		user.Salt = base64.RawStdEncoding.EncodeToString(salt)
+		user.Password = hash
+	}
+	// 保存更新
+	if err := config.DB.Save(&user).Error; err != nil {
+		response.Fail(c, 100023)
+		return
 	}
 	// 返回成功
 	response.Ok(c, gin.H{})

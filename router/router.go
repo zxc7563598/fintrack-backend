@@ -36,6 +36,8 @@ func SetupRouter() *gin.Engine {
 		authGroup.POST("/user/payment-method", controller.GetPaymentMethodHandler)
 		authGroup.POST("/user/payment-method/organize", controller.OrganizePaymentMethodHandler)
 		authGroup.POST("/user/payment-method/store", middleware.DecryptMiddleware[controller.StorePaymentMethodRequest](), controller.StorePaymentMethodHandler)
+		authGroup.POST("/user/info", controller.GetUserInfoHandler)
+		authGroup.POST("/user/info/store", middleware.DecryptMiddleware[controller.StoreUserInfoRequest](), controller.StoreUserInfoHandler)
 
 		authGroup.POST("/bills", middleware.DecryptMiddleware[controller.GetBillListRequest](), controller.GetBillListHandler)
 		authGroup.POST("/bills/calendar", middleware.DecryptMiddleware[controller.GetBillCalendarRequest](), controller.GetBillCalendarHandler)
