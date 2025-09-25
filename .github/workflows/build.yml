@@ -23,6 +23,13 @@ jobs:
           openssl genrsa -out private.pem 2048
           openssl rsa -in private.pem -pubout -out frontend/public/public_key.pem
 
+      - name: Generate config.yaml
+        run: |
+          cp config.yaml.example config.yaml
+          secret=$(openssl rand -hex 16) # 16字节hex = 32位字符串
+          sed -i.bak "s|secret:.*|secret: \"$secret\"|" config.yaml
+          rm -f config.yaml.bak
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
