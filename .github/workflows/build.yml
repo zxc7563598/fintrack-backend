@@ -22,8 +22,8 @@ jobs:
 
       - name: Generate RSA keys
         run: |
-          openssl genrsa -out private.pem 2048
-          openssl rsa -in private.pem -pubout -out frontend/public/public_key.pem
+          openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+          openssl pkey -in private.pem -pubout -out frontend/public/public_key.pem
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
