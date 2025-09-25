@@ -18,4 +18,5 @@ config.yaml
 *.exe
 *.out
 /frontend
-/build
+/build/bin
+/build/darwin
