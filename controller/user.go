@@ -4,7 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/cohesion-org/deepseek-go"
 	"github.com/zxc7563598/fintrack-backend/config"
@@ -364,8 +366,13 @@ func OrganizePaymentMethodHandler(c *gin.Context) {
 		return
 	}
 	// 初始化 client
+	client := deepseek.NewClient(apiKey)
+	client.Timeout = 600 * time.Second
+	client.HTTPClient = &http.Client{
+		Timeout: client.Timeout,
+	}
 	aiClient := &ai.AIClient{
-		Client: deepseek.NewClient(apiKey),
+		Client: client,
 	}
 	// 初始化 service（也可以复用同一个 service 结构体，只是传入不同 client）
 	classifier := service.NewBillClassifier(aiClient) // aiClient 事先初始化过

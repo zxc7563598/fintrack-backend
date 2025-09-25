@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	deepseek "github.com/cohesion-org/deepseek-go"
 	"github.com/zxc7563598/fintrack-backend/service/ai"
@@ -30,6 +29,5 @@ func (b *BillClassifier) Classify(ctx context.Context, accounts string) (string,
 	msgs := []deepseek.ChatCompletionMessage{
 		{Role: deepseek.ChatMessageRoleUser, Content: prompt},
 	}
-	fmt.Println("发送哪哦那个:", prompt)
 	return b.ai.Chat(ctx, msgs, deepseek.DeepSeekChat)
 }

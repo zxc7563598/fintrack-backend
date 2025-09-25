@@ -4,6 +4,7 @@ import (
 	"embed"
 	"flag"
 	"log"
+	"os"
 
 	"github.com/zxc7563598/fintrack-backend/config"
 	"github.com/zxc7563598/fintrack-backend/i18n"
@@ -28,6 +29,7 @@ var configFile embed.FS
 var privateKeyFile embed.FS
 
 func main() {
+	os.Setenv("GODEBUG", "netdns=cgo")
 	// 解析命令行参数
 	serverMode := flag.Bool("server", false, "在服务器模式下运行")
 	flag.Parse()
@@ -39,7 +41,6 @@ func main() {
 		runWailsMode()
 	}
 }
-
 func runServerMode() {
 	log.Println("🚀 将FinBoard作为服务器web端启动...")
 	// 初始化配置
