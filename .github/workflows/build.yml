@@ -23,13 +23,6 @@ jobs:
           openssl genrsa -out private.pem 2048
           openssl rsa -in private.pem -pubout -out frontend/public/public_key.pem
 
-      - name: Generate config.yaml
-        run: |
-          cp config.yaml.example config.yaml
-          secret=$(openssl rand -hex 16) # 16字节hex = 32位字符串
-          sed -i.bak "s|secret:.*|secret: \"$secret\"|" config.yaml
-          rm -f config.yaml.bak
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -40,6 +33,17 @@ jobs:
         with:
           version: 9
           run_install: false
+
+      - name: Generate config.yaml (cross-platform)
+        run: |
+          node -e "
+            const fs = require('fs');
+            const crypto = require('crypto');
+            const yaml = fs.readFileSync('config.yaml.example', 'utf8');
+            const secret = crypto.randomBytes(16).toString('hex');
+            const newYaml = yaml.replace(/secret:.*/, `secret: \"${secret}\"`);
+            fs.writeFileSync('config.yaml', newYaml);
+          "
 
       - name: Build frontend
         working-directory: ./frontend
