@@ -1,0 +1,58 @@
+name: Build FinBoard
+
+on:
+  workflow_dispatch: # 手动触发
+  # 后面也可以改成 tags 触发
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest] # 只要 Win + Mac
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout backend repo
+        uses: actions/checkout@v4
+
+      - name: Clone frontend repo
+        run: git clone https://github.com/zxc7563598/fintrack-frontend.git ./frontend
+
+      - name: Generate RSA keys
+        run: |
+          openssl genrsa -out private.pem 2048
+          openssl rsa -in private.pem -pubout -out frontend/public/public_key.pem
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: |
+          pnpm install
+          pnpm build
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Build Wails app
+        run: wails build
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: finboard-${{ matrix.os }}
+          path: build/bin
