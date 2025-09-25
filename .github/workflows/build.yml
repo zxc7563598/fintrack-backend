@@ -38,7 +38,7 @@ jobs:
         working-directory: ./frontend
         run: |
           pnpm install
-          pnpm build
+          pnpm build:wails
 
       - name: Setup Go
         uses: actions/setup-go@v5
