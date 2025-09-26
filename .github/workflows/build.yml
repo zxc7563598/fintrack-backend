@@ -4,13 +4,15 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     timeout-minutes: 30
-    
     strategy:
       matrix:
-        os: [windows-latest, macos-latest] # 只要 Win + Mac
+        os: [windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -44,7 +46,7 @@ jobs:
           const fs = require('fs');
           const crypto = require('crypto');
           let yaml = fs.readFileSync('config.yaml', 'utf8');
-          const secret = crypto.randomBytes(16).toString('hex'); // 32位hex
+          const secret = crypto.randomBytes(16).toString('hex');
           yaml = yaml.replace(/secret:.*/, 'secret: \"' + secret + '\"');
           fs.writeFileSync('config.yaml', yaml);
           "
@@ -66,13 +68,10 @@ jobs:
       - name: Build Wails app
         run: wails build
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: finboard-${{ matrix.os }}
-          path: build/bin
+      - name: Debug build files
+        run: ls -R build
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          files: build/bin/*
+          files: build/bin/**
