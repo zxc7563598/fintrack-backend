@@ -109,15 +109,14 @@ wails dev
 
 ## 🔑 配置与密钥
 
-- ​`config.yaml`：数据库、JWT 等配置
-- ​`i18n/`：多语言翻译文件
+- ​`config.yaml`：数据库、JWT 等配置（通过 config.yaml.example 创建）
 - ​`private.pem`：RSA 私钥文件（⚠️ 请自行生成）
 
 生成方式示例：
 
 ```bash
-openssl genrsa -out private.pem 2048
-openssl rsa -in private.pem -pubout -out public_key.pem
+openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+openssl pkey -in private.pem -pubout -out frontend/public/public_key.pem
 ```
 
 将 private.pem 放置在本项目跟目录即可
