@@ -1,5 +1,7 @@
 # 🧾 FinBoard Backend
 
+[![Shop](https://img.shields.io/badge/FinBoard-Vue3前端项目地址-3eaf7c?style=for-the-badge&logo=vue.js)](https://github.com/zxc7563598/fintrack-frontend)
+
 基于 **Go + Wails** 开发的个人财务管理应用后端，支持 **桌面应用模式** 和 **服务端模式**，可配合前端进行账单导入、统计与分析。
 
 **本项目已经经由 Zread 解析完成，如果需要快速了解项目，可以点击此处进行查看：[了解本项目](https://zread.ai/zxc7563598/fintrack-backend)**
