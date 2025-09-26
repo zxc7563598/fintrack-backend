@@ -1,8 +1,8 @@
 name: Build FinBoard
 
 on:
-  workflow_dispatch: # 手动触发
-  # 后面也可以改成 tags 触发
+  release:
+    types: [created]
 
 jobs:
   build:
@@ -71,3 +71,8 @@ jobs:
         with:
           name: finboard-${{ matrix.os }}
           path: build/bin
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/bin/*
