@@ -1,5 +1,5 @@
 database:
-  sqlite_path: "data/test.db"
+  sqlite_path: "data/database"
 
 jwt:
   secret: "ljd38jdlwdDWlkjidF3rSDF3dasda233"
