@@ -98,6 +98,9 @@ wails dev
 2. 分发生成的可执行文件给用户
 3. 用户直接运行即可使用
 
+> Mac 运行需要进行签名
+> 可以通过 `xattr -d com.apple.quarantine /应用文件路径` 来去除隔离标记直接进行使用
+
 ### 服务端应用
 
 1. 执行 `./build.sh server`​
