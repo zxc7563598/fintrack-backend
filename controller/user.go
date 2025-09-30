@@ -289,12 +289,12 @@ func StoreDeepseekApiKeyHandler(c *gin.Context) {
 		return
 	}
 	// 存储数据
-	user := model.User{
-		DeepseekApiKey: req.Key,
+	updates := map[string]any{
+		"deepseek_api_key": req.Key,
 	}
 	err := config.DB.Model(&model.User{}).
 		Where("id = ?", userID).
-		Updates(user).Error
+		Updates(updates).Error
 	if err != nil {
 		response.Fail(c, 100013)
 		return
@@ -361,7 +361,7 @@ func OrganizePaymentMethodHandler(c *gin.Context) {
 	// 获取用户DeepseekAPIKey
 	var apiKey string
 	err := config.DB.Model(&model.User{}).Select("deepseek_api_key").Where("id = ?", userID).Scan(&apiKey).Error
-	if err != nil {
+	if err != nil || apiKey == "" {
 		response.Fail(c, 100018)
 		return
 	}
