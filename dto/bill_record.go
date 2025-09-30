@@ -11,6 +11,21 @@ type BillListItem struct {
 	Remark        string  `json:"remark"`
 }
 
+type BillExportItem struct {
+	TradeNo         string  `json:"trade_no"`
+	MerchantOrderNo string  `json:"merchant_order_no"`
+	Platform        uint8   `json:"Platform"`
+	IncomeType      uint8   `json:"income_type"`
+	TradeType       string  `json:"trade_type"`
+	ProductName     string  `json:"product_name"`
+	Counterparty    string  `json:"counterparty"`
+	PaymentMethod   string  `json:"payment_method"`
+	Amount          float64 `json:"amount"`
+	TradeStatus     string  `json:"trade_status"`
+	TradeTime       int64   `json:"trade_time"`
+	Remark          string  `json:"remark"`
+}
+
 type BillInfoItem struct {
 	ID              uint    `json:"id"`
 	UserID          uint    `json:"user_id"`

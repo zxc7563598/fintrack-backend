@@ -44,6 +44,7 @@ func SetupRouter() *gin.Engine {
 		authGroup.POST("/bills/info", middleware.DecryptMiddleware[controller.GetBillInfoRequest](), controller.GetBillInfoHandler)
 		authGroup.POST("/bills/save", middleware.DecryptMiddleware[controller.StoreBillRecordRequest](), controller.StoreBillRecordHandler)
 		authGroup.POST("/bills/delete", middleware.DecryptMiddleware[controller.DeleteBillRecordRequest](), controller.DeleteBillRecordHandler)
+		authGroup.POST("/bills/export", middleware.DecryptMiddleware[controller.ExportBillRequest](), controller.ExportBillHandler)
 
 		authGroup.POST("/file/alipay/upload/csv", controller.UploadAlipayCSVHandler)
 		authGroup.POST("/file/alipay/upload/zip", controller.UploadAlipayZIPHandler)
