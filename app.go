@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/zxc7563598/fintrack-backend/config"
 	"github.com/zxc7563598/fintrack-backend/i18n"
@@ -69,4 +72,22 @@ func (a *App) GetAppInfo() map[string]interface{} {
 		"version": "1.0.0",
 		"mode":    "desktop",
 	}
+}
+
+// SaveCSV 弹出保存对话框，让用户选择保存路径，并写入 CSV
+func (a *App) SaveCSV(defaultFilename string, data []uint8) error {
+	filename, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		Title:           "保存账单",
+		DefaultFilename: defaultFilename,
+		Filters: []runtime.FileFilter{
+			{DisplayName: "CSV 文件", Pattern: "*.csv"},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if filename == "" {
+		return nil // 用户取消
+	}
+	return os.WriteFile(filename, data, 0644)
 }

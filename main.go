@@ -76,6 +76,9 @@ func runWailsMode() {
 		OnDomReady:       app.OnDomReady,
 		OnBeforeClose:    app.OnBeforeClose,
 		OnShutdown:       app.OnShutdown,
+		Bind: []any{
+			app,
+		},
 	})
 	if err != nil {
 		log.Fatal("无法启动Wails应用程序:", err)
