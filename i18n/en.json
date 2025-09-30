@@ -96,6 +96,10 @@
     "translation": "Data storage failed"
   },
   {
+    "id": "100024",
+    "translation": "No data available. Please perform analysis after querying the data"
+  },
+  {
     "id": "200002",
     "translation": "Failed to generate login credential"
   },

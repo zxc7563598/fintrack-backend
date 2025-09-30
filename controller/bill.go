@@ -558,6 +558,10 @@ func AnalysisBillHandler(c *gin.Context) {
 		response.Fail(c, 100001)
 		return
 	}
+	if len(records) <= 0 {
+		response.Fail(c, 100024)
+		return
+	}
 	// 新建 CSV writer
 	var buf bytes.Buffer
 	buf.WriteString("\xEF\xBB\xBF")
